@@ -16,7 +16,9 @@ def main()
     when 0
         usage
     when 1
-        password = STDIN.noecho(&:gets) # wtf
+        print "Password:"
+        password = STDIN.noecho(&:gets).chomp # wtf
+        puts
     when 2
         password = ARGV[1]
     else

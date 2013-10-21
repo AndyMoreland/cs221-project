@@ -2,6 +2,7 @@ require 'gmail'
 require 'sqlite3'
 require 'sequel'
 require 'io/console'
+require 'cgi'
 
 DBFILE = "scrape.db"
 
@@ -42,8 +43,9 @@ def main()
     puts "Working..."
     values = []
     gmail.inbox.find.each do |email|
+        to = email.to[0]
         from = email.from[0]
-        values.push [username, "#{from.mailbox}@#{from.host}", email.date, %q(email.body)]
+        values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, email.body.to_s]
     end 
 
     db[:emails].import([:to, :from, :timestamp, :content], values)

@@ -1,0 +1,182 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage[top=1in, bottom=1in, left=0.8in, right=1in]{geometry}
+\usepackage{multicol}
+\usepackage{amsfonts}
+\usepackage{wrapfig}
+\usepackage{mathtools}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{amssymb}
+\usepackage{titlesec}
+
+
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\newcommand{\overbar}[1]{\mkern 1.5mu\overline{\mkern-1.5mu#1\mkern-1.5mu}\mkern 1.5mu}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\F}{\mathbb{F}}
+\renewcommand{\P}{\mathcal{P}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\sectionbreak}{\clearpage}
+\renewcommand{\L}{\mathcal{L}}
+
+
+\setlength{\columnsep}{0.1pc}
+
+\title{Forget Me Not: CS221 Project Proposal}
+\author{Andy Moreland \texttt{(andymo@)} and Leo Martel \texttt{(lmartel@)}}
+\date{\today}
+\begin{document}
+
+\maketitle
+\rule{\linewidth}{0.4pt}
+
+\clearpage
+
+\vspace{-0.3in}
+\setlength{\parskip}{10pt plus 1pt minus 1pt}
+\pagestyle{fancy}
+\rhead{Andrew Moreland and Leo Martel}
+
+\begin{enumerate}
+\section*{Book Exercises}
+\item[1:]
+  We are given some $T \in \L(V)$. We shall show that if $U_1$, ... $U_m$ are invariant subspaces of $V$ under $T$, then $U_1 + ... + U_m$ is invariant under $T$.
+
+  Consider some $u \in U_1 + ... + U_m$. We know that $u = u_1 + ... + u_m$ for $u_i \in U_i$. By the linearity of $T$ we know that $T(u) = T(u_1) + ... + T(u_m)$. Since each $U_i$ is T-invariant, we know that $T(u_i) \in U_i$ for each $i$.  Therefore, $T(u_1) + ... + T(u_m) \in U_1 + ... + U_m$ since we know that the sum of the $U_i$ is a subspace and thus closed under vector addition. 
+
+  Thus, since for any $u \in U_1 + ... + U_m$, $T(u)$ is also in $U_1 + ... + U_m$, we see that $U_1 + ... + U_m$ is T-invariant by the definition of an invariant subspace.
+
+\item[2:]
+  We are given some $T \in \L(V)$. We wish to show that the intersection of some T-invariant subspaces of $V$ $U_1, ... U_m$ is also T-invariant. Note that in previous exercises we have shown that the intersection of subspaces of $V$ is itself a subspace.
+
+  Since we know that the intersection of some T-invariant subspaces is itself a subspace, in order to show that this intersection $\U$ is itself T-invariant we need only show that $T(u)$ for $u \in \U$ is still in $\U$.
+
+  Since $\U$ is defined as the intersection of several $U_i$, we know that any $u \in \U$ is itself in each $U_i$. Therefore, since each $U_i$ is T-invariant we see that $T(u) \in U_i$ for all $i$.  Thus, since $T(u)$ is in each $U_i$, it is in their intersection and therefore in $\U$. Now we see that $\U$ is T-invariant and we are done.
+
+\item[4:]
+  Given $S, T \in \L(V)$ such that $ST = TS$, we wish to show that $K = ker(T - \lambda I)$ is invariant under $S$ for all $\lambda \in \F$.
+
+  Consider some $a \in K$. We wish to show that $S(a) \in K$ as well. So:
+
+  \begin{align*}
+    (T - \lambda I)(S(a)) &= T(S(a)) - \lambda I(S(a)) \\
+    &= S(T(a)) - \lambda S(a) \\
+    &= S(\lambda a) - \lambda S(a) \\
+    &= \lambda S(a) - \lambda S(a) \\
+    &= 0
+  \end{align*}
+
+  The second step follows because $ST = TS$, and the third step by construction of $a$. Therefore, we see that $S(a)$ is in $K$ since $0$ is an element of any subspace, and particularly any kernel. Thus, $K$ is S-invariant as desired.
+
+\item[5:]
+  Given $T \in \L(\F^2)$ with $T: (w, z) \mapsto (z, w)$ we wish to find all eigenvalues and vectors of $T$.
+
+  An eigenvector of an operator over $\F^2$ is defined to be some $v \in \F^2$ such that $T(v) = \lambda v$ for some $\lambda \in \F$. Thus, we want to find all $(w, z)$ such that $(w, z) = \lambda (z, w)$ for some $\lambda$. We see that $w = \lambda z$ and $z = \lambda w$, thus $z = w$ and $\lambda = 1$, or $z = -w$ and $\lambda = -1$.
+
+  Note that $0$ is not an eigenvalue as it is associated only with the vector $(0, 0)$.
+
+  Therefore, we have two subspaces of eigenvectors of $T$: $\{(w, z)\ |\ w = -z\}$ which is associated with the eigenvalue of $-1$ and $\{(w, z)\ |\ w = z\}$ which is associated with the eigenvalue $1$.
+
+\item[6:]
+  Given $T \in \L(\F^2)$ with $T: (z_1, z_2, z_3) \mapsto (2z_2, 0, 5z_3)$ we wish to find the eigenvalues and vectors of $T$.
+
+  From the definition of eigenvectors, we know that we want some $\lambda (z_1, z_2, z_3) = (2z_2, 0, 5z_3)$ for some $\lambda \in \F$. Thus, $\lambda z_1 = 2z_2$, $z_2 = 0$ (which forces $z_1 = 0$), and $\lambda z_3 = 5 z_3$, which is clearly only true if $\lambda = 5$.
+  
+  Thus, the eigenvectors of $T$ are all $(0, 0, x)$ for $x \in \F$ and these eigenvectors are associated with the eigenvalue $5$. $0$ is not an eigenvalue of $T$ since if we choose $\lambda = 0$, then the vector is forced to the $0$ vector.
+
+
+\item[8:]
+  We are given $T \in \L(\F^{\infty})$ such that $T$ is the backwards shift operator defined by $T(z_1, z_2, z_3, ...) = (z_2, z_3, z_4, ...)$ we wish to find the eigenvalues and vectors of $T$.
+
+  From the definition of eigenvectors we know that we want some $\lambda (z_1, z_2, z_3, ...) = (z_2, z_3, z_4, ...)$. Thus, we have $z_i = \frac{1}{\lambda} z_{i+1}$ for all $i$. If we fix a lambda, we see that $z_1 = \frac{1}{\lambda} z_2 = \frac{1}{\lambda \lambda} z_3 = ... = \frac{1}{\lambda^{n-1}} z_n$. Note that each $z_i$ has to be equal to $\frac{1}{\lambda}$ of $z_{i+1}$. So, for any $\lambda$ the eigenvectors associated with it are the constant multiples of the vector of its powers.
+
+  In other words, if $\lambda = a \in \F$, then its eigenvectors are all $(ca^{0},ca^1, ca^2, ca^3, ...)$ for $c \in F$. There are an infinite number of eigenvalues and vectors of this operator.
+
+  Note that $0$ is not an eigenvalue because it is associated only with the $0$ vector.
+
+\item[12:]
+  We have $T \in \L(V)$ such that every vector in $V$ is an eigenvector of $T$. We wish to see that $T$ must be $aI$ for some $a \in \F$.
+
+  By the definition of an eigenvector, we have that for all $v \in V$, $T(v) = \lambda v$. We wish to show that $\lambda$ must be the same for any $v$.
+
+  Consider $v = v_1 + v_2 + ...$ for basis vectors $v_i$. Note that I am not assuming a finite basis. We know that $v$ must be an eigenvector of $T$, by its definition. Thus, $T(v) = \lambda \cdot v = \lambda \cdot v_1 + \lambda \cdot v_2 + ... = T(v_1) + T(v_2) + ... = T(v_1 + v_2 + ...)$ (by linearity of $T$, and the fact that each $v_i$ is an eigenvector so $T(v_i)$ can only be a multiple of $v_i$, not of any other $v_j$). 
+
+  Thus, we see that $T(v_i) = \lambda v_i$ and $\lambda$ is the same for every $v_i$. Thus, $T(v) = \lambda v$ for some fixed $v$ -- and thus $T = \lambda I$ as we desired, so we are done.
+
+\section*{Extra problems}
+\item[1:]
+  \begin{enumerate}
+  \item
+    I will use the notation $A = C^{\infty}(\R) / U$ in this problem.
+
+    Consider the natural homomorphism $\phi: C^{\infty} \to A$ which maps each element of $C^{\infty}$ to its coset-element in the quotient space. We know that the kernel of this homomorphism is $U$, by construction. I will show that we can create two vectors, $x + U$ and $y + U$, such that any $u + U \in A = (ax + by) + U$ for $a, b \in \R$. These $x$ and $y$ will be the basis vectors.
+
+    Let $x$ be defined as $\frac{x'}{x'(2)}$ for some function $x'$ where $x'(2) \ne 0$. Let $y$ be similarly defined for $y'(7)$. Thus, $x(2) = 1$ and $y(7) = 1$. We also define $x(7) = 0$ and $y(2) = 0$. We can construct the $x'$ and $y'$ that satisfies these properties by using some interpolating polynomials. I will supress this detail.
+
+    Consider some function $u \in C^{\infty}(\R)$ such that $u(2) = a$ and $u(7) = b$. We see that $\phi(u) = u + U = (ax + by) + U = \phi(ax + by)$. The equality of $u + U$ and $(ax + by) + U$ comes from the fact that two vectors are equal in a vector space iff their difference is the $0$-vector. In a quotient space, that means that $a + U = b + U$ iff $a - b \in U$.
+
+    In our case, $u -ax -by \in U$ because $u(2) = a$ and $u(7) = b$, and $(ax + by)(2) = a$ (by linearity) and $(ax + by)(7) = b$. Thus, $u$ and $ax + by$ differ by $0$ at $x = 2, 7$, so the function that is their difference vanishes at those points and is in the kernel.
+
+    Thus, $x + U$ and $y + U$ span $A$ as we have shown that any $u \in A$ can be written as a linear combination of them. We need to show that they are linearly independent now. 
+
+    $(ax + U) + (by + U) = 0 = U$ iff $a$ and $b$ are both $0$. This is true because $x(2) = 1$ and $y(2) = 0$, so for no non-zero $a, b \in \R$ are $ax(2) = by(2)$. Thus, $x + U$ and $y + U$ are linearly independent.
+
+    Therefore, we have a list of length two which is linearly independent and spans $A$, so $dim(A) = 2$ (and therefore is trivially finite).
+
+  \item 
+    We will go about this section in the same way as before. Let $A = C^{\infty}(\R) / U$ for convenience, and let $\phi$ be the natural homomorphism from $C^{\infty}$ to $A$. Again, the kernel of this homomorphism is $U$. I will show three vectors, $p + U, q + U, r + U$ such that any $u + U \in A = (ap + bq + cr) + U$ for some $a,b,c \in \R$.
+
+    Let $p = \frac{x^2}{2}$. We see that $p(0) = 0, p'(0) = 0, p''(0) = 1$. Let $q = x$. $q(0) = 0, q'(0) = 1, q''(0) = 0$. Let $r = 1$. $r(0) = 1, r'(0) = 0, r''(0) = 0$. 
+
+    Now consider some $u$ such that $u''(0) = a$, $u'(0) = b$, $u(0) = c$. We see that $(u - ap - bq - cr)(0) = 0$, and by linearity of differentiation, $(u - ap - bq - cr)'(0) = 0$ and $(u - ap - bq - cr)''(0) = 0$. Thus, we see that this difference function vanishes to second order at $0$. Therefore, the difference function is in $U$, and we can say that $u + U = (ap + bq + cr) + U$. Since this $u$ was arbitrary, we see that $p, q, r$ span $A$.
+
+    Now we wish to show that $p, q, r + U$ are linearly independent. This is true if $(ap + bq + cr) + U = U$ for non-zero $a, b, c$. If this were true, then $(ap + bq + cr)(0) = 0$ and $(ap + bq + cr)'(0) = 0$ and $(ap + bq + cr)''(0) = 0$ for some non-zero $a, b, c$. But we know that $r(0) = 1$ and $q'(0) = 1$ and $p''(0) = 1$ while the other functions are zero at these points, so each $a, b, c$ must equal $0$ for the sum of the functions to be $0$ to second order. Thus, $ap + bq + cr \in U$ (and thus equal $0$ in $A$) only if $a, b, c = 0$. This is the definition of linear independence when applied to a quotient space.
+
+    Therefore, $p, q, r + U$ are spanning and linearly independent in $A$, so they are a basis for the vector space. Since there are three of them, $dim(A) = 3$.
+
+  \end{enumerate}
+
+\item[2:]
+  \begin{enumerate}
+  \item
+    Clearly $V$ is a subset of $C^{\infty}(\R, C)$. Thus, we need only check the subspace criterion.
+
+    \begin{enumerate}
+      \item[S$0$:]
+        The $0$ vector (the function such that $f(x) = 0$ for all $x$) is a member of this subspace since it is trivially continuous and all of its derivatives are the $0$ function, so $f'' = -f$.
+
+      \item[S$+$:]
+        Consider $f, g \in V$. We know that $f'' = -f$ and $g'' = -f$. We wish to show that $(f + g)'' = -(f + g)$. By the linearity of differentiation, we see that $(f + g)'' = f'' + g'' = -f -g = -(f + g)$ as desired, and is in the subspace since the sum of infinitely differentiable functions is infinitely differentiable.
+
+      \item[S$\cdot$:]
+        Consider $a \in \F$ and $f$. We know by the linearity of differentiation that $(af)'' = a(f'') = a(-f) = -af$ as desired, and is in the subspace since a scalar multiplication of infinitely differentiable functions is still infinitely differentiable.
+    \end{enumerate}
+    
+    Thus we see that $V$ is closed under scalar multiplication, vector addition, and contains the $0$ vector. Thus, $V$ is a subspace as desired.
+
+  \item
+    We see that $sin(x)'' = cos(x)' = -sin(x)$ and $cos(x)'' = -sin(x)' = -cos(x)$, so $sin(x)$ and $cos(x)$ are in $V$. 
+   
+    Since we know that $dim(V) \le 2$, it suffices to show that $cos$ and $sin$ are linearly independent in order to show that they are a basis, since we know that any basis list has dimension either $0, 1, 2$ and any linearly independent list is at most the length of a basis list. If $cos$ and $sin$ are linearly independent, then they are only bounded by $2$, so $2$ must be the dimension and and linearly independent list of a length equal to the dimension is a basis.
+
+    To see that they are linearly independent we must show that $cos(x) \ne a \cdot sin(x)$ for some non-zero $a \in \F$. Consider $x = 0$. We see that $cos(x) = 1$ and $sin(x) = 0$. $1 \ne a \cdot 0 = 0$ for any $a$, therefore $sin$ and $cos$ are linearly independent in $V$, and thus we know they are a basis.
+
+  \item
+    We wish to show that $V$ is invariant under the operator $D: f \mapsto f'$. We know that any $v \in V$ can be written as $a \cdot sin + b \cdot cos$ for $a, b \in \C$. If we take $D(v)$, we see that $D(v) = a \cdot cos - b \cdot sin$, and $a$ and $-b$ are both scalars in $\C$, so $D(v)$ is a linear combination of basis vectors in $V$, so $D(v) \in V$ for any $v \in V$. This is the definition of a D-invariant subspace.
+    
+  \item 
+    We wish to find two $v \in V$ such that $Dv = \lambda v$ for $\lambda \in \C$, and $v = a \cdot sin + b \cdot cos$ for $a, b \in \C$. Thus, if we take the derivative of $v$ and set it equal to $\lambda v$, we are given the constraints that $a \lambda = -b$ and $b \lambda = a$. If we solve these equations in $\C$, we find that we have two values of $\lambda$: $i$ and $-i$, and corresponding eigenvectors in $\V$: $i\cdot sin + cos$ and $sin + i \cdot cos$.
+
+    We know by theorem $5.6$ that these eigenvectors are linearly independent, as they come from distinct eigenvalues, so since there are two of them they form an eigenbasis for this $2$ dimensional vector space, as we wanted, and we are done. Yay :-).
+    
+  \end{enumerate}
+\end{enumerate}
+\end{document}

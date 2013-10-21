@@ -43,13 +43,16 @@ def main()
     puts "Working..."
     values = []
     gmail.inbox.find.each do |email|
-        to = email.to[0]
-        from = email.from[0]
-        values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, email.body.to_s]
+        begin
+            to = email.to[0]
+            from = email.from[0]
+            values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, email.body.to_s]
+        rescue
+            puts "Skipping malformed email"
+        end
     end 
 
     db[:emails].import([:to, :from, :timestamp, :content], values)
-
     puts "Created #{DBFILE} from #{db[:emails].count} emails."
 
     gmail.logout

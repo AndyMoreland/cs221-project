@@ -1,9 +1,14 @@
-GEM
+GIT
+  remote: git@github.com:AndyMoreland/gmail.git
+  revision: 8034a8ec431d0d1f1e29dd561190eaed51c16d44
   specs:
     gmail (0.4.0)
       gmail_xoauth (>= 0.3.0)
       mail (>= 2.2.1)
       mime (>= 0.1)
+
+GEM
+  specs:
     gmail_xoauth (0.4.1)
       oauth (>= 0.3.6)
     mail (2.5.4)
@@ -21,4 +26,4 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  gmail
+  gmail!

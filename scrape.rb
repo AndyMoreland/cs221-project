@@ -9,7 +9,7 @@ require 'cgi'
 DBFILE = "scrape.db"
 
 def usage()
-  print "Usage: ruby scrape.rb username [password]"
+  puts "Usage: ruby scrape.rb username [password]"
   exit 1
 end
 

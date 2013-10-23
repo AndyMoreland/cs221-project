@@ -44,7 +44,7 @@ def main()
 
     puts "Working..."
     values = []
-    gmail.inbox.find.each do |email|
+    (gmail.inbox.find.concat gmail.mailbox('[Gmail]/Sent Mail').find).each do |email|
         begin
             to = email.to[0]
             from = email.from[0]
@@ -52,7 +52,7 @@ def main()
         rescue
             puts "Skipping malformed email"
         end
-    end 
+    end
 
     db[:emails].import([:to, :from, :timestamp, :content], values)
     puts "Created #{DBFILE} from #{db[:emails].count} emails."

@@ -54,7 +54,8 @@ def main()
     begin
       to = email.to[0]
       from = email.from[0]
-      values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, email.body.to_s, email.thread_id]
+      puts email.message
+      # values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, email.body.to_s, email.thread_id]
     rescue Exception => e
       puts "Skipping malformed email #{e}"
     end

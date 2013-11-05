@@ -1,10 +1,5 @@
 import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
-import java.io.IOException;
-import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -20,15 +15,15 @@ public class Email {
 
     private final String to;
     private final String from;
-    private final int threadId;
-    private final DateTime timestamp;
+    private final long threadId;
+    private final String timestamp;
     private final String content;
 
     public String getContent() {
         return content;
     }
 
-    public DateTime getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
@@ -40,7 +35,7 @@ public class Email {
         return to;
     }
 
-    public Email(String to, String from, int threadId, DateTime timestamp, String content) {
+    public Email(String to, String from, long threadId, String timestamp, String content) {
         this.to = to;
         this.from = from;
         this.threadId = threadId;
@@ -55,8 +50,8 @@ public class Email {
                 emails.add(new Email(
                         results.getString(TO_COLUMN),
                         results.getString(FROM_COLUMN),
-                        results.getInt(THREAD_ID_COLUMN),
-                        parseDate(results.getString(TIMESTAMP_COLUMN)),
+                        results.getLong(THREAD_ID_COLUMN),
+                        results.getString(TIMESTAMP_COLUMN),
                         results.getString(CONTENT_COLUMN)
                 ));
             }
@@ -68,11 +63,11 @@ public class Email {
         return emails;
     }
 
-    public int getThreadId() {
+    public long getThreadId() {
         return threadId;
     }
 
-    private static DateTime parseDate(String dateString) {
+    private DateTime getDateTime(String dateString) {
         SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZ");
         SimpleDateFormat secondFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss ZZZZ");
 
@@ -85,18 +80,6 @@ public class Email {
                 System.err.println("Failed to parse datetime: " + dateString);
                 return null;
             }
-        }
-    }
-
-    public String getSqlDateTime() {
-        DateTimeFormatter isoFormatter = ISODateTimeFormat.dateTimeParser();
-        StringWriter writer = new StringWriter();
-        try {
-            isoFormatter.printTo(writer, timestamp);
-            return writer.toString();
-        } catch (IOException e) {
-            System.err.println("Failed to format " + timestamp);
-            return null;
         }
     }
 }

@@ -11,8 +11,9 @@ public class AnalysisMain {
 
         List<Email> emails = Email.parseEmails(emailResults);
 
-        for (Email email : emails) {
-            System.out.println(simpleClassifier.classify(email));
-        }
+        Experiment experiment = new Experiment(new CorrectClassifier(connection, "andymo@stanford.edu"), simpleClassifier);
+        Statistics stats = experiment.execute(emails);
+
+        System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
     }
 }

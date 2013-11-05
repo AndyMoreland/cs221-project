@@ -54,8 +54,11 @@ def main()
     begin
       to = email.to[0]
       from = email.from[0]
-      puts email.message
-      # values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, email.body.to_s, email.thread_id]
+      body = email.body.to_s
+      body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
+      body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
+
+      values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, body, email.thread_id]
     rescue Exception => e
       puts "Skipping malformed email #{e}"
     end

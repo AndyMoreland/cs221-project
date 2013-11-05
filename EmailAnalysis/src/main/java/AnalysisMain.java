@@ -6,10 +6,10 @@ import java.util.List;
 
 public class AnalysisMain {
     public static void main(String argv[]) throws ParseException, SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:/Users/andrew/cs221-project/scrape.db");
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + Config.DB_PATH);
         Statement statement = connection.createStatement();
         ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
-        Classifier simpleClassifier = new SimpleClassifier(connection, "andymo@stanford.edu");
+        Classifier simpleClassifier = new SimpleClassifier(connection, Config.EMAIL_ADDRESS);
 
         List<Email> training = new ArrayList<Email>();
         List<Email> test = new ArrayList<Email>();

@@ -1,8 +1,14 @@
 import com.google.common.collect.Lists;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class Email {
@@ -15,16 +21,14 @@ public class Email {
     private final String to;
     private final String from;
     private final int threadId;
-    private final Timestamp timestamp;
+    private final DateTime timestamp;
     private final String content;
-
-
 
     public String getContent() {
         return content;
     }
 
-    public Timestamp getTimestamp() {
+    public DateTime getTimestamp() {
         return timestamp;
     }
 
@@ -36,7 +40,7 @@ public class Email {
         return to;
     }
 
-    public Email(String to, String from, int threadId, Timestamp timestamp, String content) {
+    public Email(String to, String from, int threadId, DateTime timestamp, String content) {
         this.to = to;
         this.from = from;
         this.threadId = threadId;
@@ -52,7 +56,7 @@ public class Email {
                         results.getString(TO_COLUMN),
                         results.getString(FROM_COLUMN),
                         results.getInt(THREAD_ID_COLUMN),
-                        results.getTimestamp(TIMESTAMP_COLUMN),
+                        parseDate(results.getString(TIMESTAMP_COLUMN)),
                         results.getString(CONTENT_COLUMN)
                 ));
             }
@@ -66,5 +70,33 @@ public class Email {
 
     public int getThreadId() {
         return threadId;
+    }
+
+    private static DateTime parseDate(String dateString) {
+        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZ");
+        SimpleDateFormat secondFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss ZZZZ");
+
+        try {
+            return new DateTime(format.parse(dateString));
+        } catch (ParseException e) {
+            try {
+                return new DateTime(secondFormat.parse(dateString));
+            } catch (ParseException e1) {
+                System.err.println("Failed to parse datetime: " + dateString);
+                return null;
+            }
+        }
+    }
+
+    public static String getSqlDateTime(DateTime dateTime) {
+        DateTimeFormatter isoFormatter = ISODateTimeFormat.dateTimeParser();
+        StringWriter writer = new StringWriter();
+        try {
+            isoFormatter.printTo(writer, dateTime);
+            return writer.toString();
+        } catch (IOException e) {
+            System.err.println("Failed to format " + dateTime);
+            return null;
+        }
     }
 }

@@ -36,7 +36,7 @@ public class SimpleClassifier implements Classifier {
         try {
             statement = connection.prepareStatement("SELECT count(*) as replies from emails WHERE thread_id = ? AND timestamp > ?");
             statement.setInt(0, email.getThreadId());
-            statement.setTimestamp(1, email.getTimestamp());
+            statement.setString(1, Email.getSqlDateTime(email.getTimestamp()));
             ResultSet laterResponses = statement.executeQuery();
             return laterResponses.getInt("replies") > 0;
         } catch (SQLException e) {

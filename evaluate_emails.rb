@@ -8,7 +8,7 @@ require 'set'
 
 DBFILE = "scrape.db"
 
-SELF_EMAIL = "andymo@stanford.edu"
+SELF_EMAIL = "leopmartel@gmail.com"
 
 class Experiment
 

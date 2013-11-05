@@ -10,14 +10,20 @@ public class AnalysisMain {
         Statement statement = connection.createStatement();
         ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
         Classifier simpleClassifier = new SimpleClassifier(connection, Config.EMAIL_ADDRESS);
+        CorrectClassifier oracle = new CorrectClassifier(connection, Config.EMAIL_ADDRESS);
 
         List<Email> training = new ArrayList<Email>();
         List<Email> test = new ArrayList<Email>();
         splitData(Email.parseEmails(emailResults), training, test);
 
-        for (Email email : training) {
-            System.out.println(simpleClassifier.classify(email));
-        }
+        Classifier rainbowClassifier = new RainbowClassifier("/Users/andrew/cs221-project", training, oracle);
+
+        System.out.println("Executing experiment");
+        Experiment experiment = new Experiment(oracle, rainbowClassifier);
+        Statistics stats = experiment.execute(test);
+
+        System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
+
     }
 
     private static void splitData(List<Email> all, List<Email> training, List<Email> test){

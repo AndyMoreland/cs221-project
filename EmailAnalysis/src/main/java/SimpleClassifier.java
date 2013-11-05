@@ -31,21 +31,6 @@ public class SimpleClassifier implements Classifier {
         }
     }
 
-    private boolean hasRespondedToSender(Email email) {
-        PreparedStatement statement = null;
-        try {
-            statement = connection.prepareStatement("SELECT count(*) as replies from emails WHERE thread_id = ? AND timestamp > ?");
-            statement.setInt(0, email.getThreadId());
-            statement.setString(1, email.getSqlDateTime());
-            ResultSet laterResponses = statement.executeQuery();
-            return laterResponses.getInt("replies") > 0;
-        } catch (SQLException e) {
-            System.err.println("While attempting to check if sender " + email.getFrom() + " was responded to: ");
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     @Override
     public EmailClass classify(Email email) {
         if (emailTargets.contains(email.getFrom())) {

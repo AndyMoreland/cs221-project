@@ -10,12 +10,16 @@ public class AnalysisMain {
         Statement statement = connection.createStatement();
         ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
         Classifier simpleClassifier = new SimpleClassifier(connection, "andymo@stanford.edu");
+        CorrectClassifier oracle = new CorrectClassifier(connection, "andymo@stanford.edu");
 
         List<Email> training = new ArrayList<Email>();
         List<Email> test = new ArrayList<Email>();
         splitData(Email.parseEmails(emailResults), training, test);
 
-        Experiment experiment = new Experiment(new CorrectClassifier(connection, "andymo@stanford.edu"), simpleClassifier);
+        Classifier rainbowClassifier = new RainbowClassifier("/Users/andrew/cs221-project", training, oracle);
+
+        System.out.println("Executing experiment");
+        Experiment experiment = new Experiment(oracle, rainbowClassifier);
         Statistics stats = experiment.execute(test);
 
         System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());

@@ -1,12 +1,12 @@
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.sql.*;
-import java.util.List;
+import java.util.Set;
 
 public class SimpleClassifier implements Classifier {
     private Connection connection;
     private String selfEmailAddress;
-    private List<String> emailTargets = Lists.newArrayList();
+    private Set<String> emailTargets = Sets.newHashSet();
 
     public SimpleClassifier(Connection connection, String selfEmailAddress) {
         this.connection = connection;
@@ -19,12 +19,12 @@ public class SimpleClassifier implements Classifier {
         Statement statement;
         try {
             statement = connection.createStatement();
-            ResultSet emailTargets = statement.executeQuery("SELECT to FROM emails WHERE from = '" + selfEmailAddress + "';");
+            ResultSet emailTargets = statement.executeQuery("SELECT `to` FROM emails WHERE `from` = '" + selfEmailAddress + "';");
 
             while (emailTargets.next()) {
                 this.emailTargets.add(emailTargets.getString(Email.TO_COLUMN));
             }
-            System.out.println("Loaded " + this.emailTargets.size() + "email recipients.");
+            System.out.println("Loaded " + this.emailTargets.size() + " email recipients.");
         } catch (SQLException e) {
             System.err.println("While attempting to compute email targets for " + selfEmailAddress);
             e.printStackTrace();
@@ -48,6 +48,10 @@ public class SimpleClassifier implements Classifier {
 
     @Override
     public EmailClass classify(Email email) {
-        return EmailClass.SHOULDNT_RESPOND_TO;
+        if (emailTargets.contains(email.getFrom())) {
+            return EmailClass.SHOULD_RESPOND_TO;
+        } else {
+            return EmailClass.SHOULDNT_RESPOND_TO;
+        }
     }
 }

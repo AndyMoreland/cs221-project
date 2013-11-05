@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AnalysisMain {
@@ -9,11 +11,25 @@ public class AnalysisMain {
         ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
         Classifier simpleClassifier = new SimpleClassifier(connection, "andymo@stanford.edu");
 
-        List<Email> emails = Email.parseEmails(emailResults);
+        List<Email> training = new ArrayList<Email>();
+        List<Email> test = new ArrayList<Email>();
+        splitData(Email.parseEmails(emailResults), training, test);
 
         Experiment experiment = new Experiment(new CorrectClassifier(connection, "andymo@stanford.edu"), simpleClassifier);
-        Statistics stats = experiment.execute(emails);
+        Statistics stats = experiment.execute(test);
 
         System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
+
+    }
+
+    private static void splitData(List<Email> all, List<Email> training, List<Email> test){
+        Collections.shuffle(all);
+        int i = 0;
+        for(; i < all.size() * 0.7; i++){
+            training.add(all.get(i));
+        }
+        for(; i < all.size(); i++){
+            test.add(all.get(i));
+        }
     }
 }

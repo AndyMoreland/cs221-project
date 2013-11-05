@@ -1,13 +1,21 @@
+import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/* You'll need to have the rainbow classifier in /usr/local/bin/rainbow" */
 public class RainbowClassifier implements Classifier {
+    public static final String RAINBOW_BINARY = "/usr/local/bin/rainbow";
     private String workingDirectory;
     private String modelFilePath;
     private final List<Email> trainingData;
     private Oracle oracle;
+    private Pattern falsePattern = Pattern.compile(".*\\/(\\d+) shouldRespond shouldntRespond:([0-9.]+) .*");
+    private Pattern truePattern = Pattern.compile(".*\\/(\\d+) shouldRespond shouldRespond:([0-9.]+) .*");
 
     public RainbowClassifier(String workingDirectory, List<Email> trainingData, Oracle oracle) {
         this.workingDirectory = workingDirectory;
@@ -43,7 +51,7 @@ public class RainbowClassifier implements Classifier {
                     trainingDataFile = new File(negativeTrainingData + "/" + index);
                 }
 
-                FileWriter writer = writer = new FileWriter(trainingDataFile);
+                FileWriter writer = new FileWriter(trainingDataFile);
                 writer.write(email.getContent());
                 writer.close();
                 index++;
@@ -53,12 +61,18 @@ public class RainbowClassifier implements Classifier {
         }
 
         /* Then we train the model on the files. */
-        ProcessBuilder pb = new ProcessBuilder("/usr/local/bin/rainbow", "-d", modelFilePath, "--index", trainingDataDirectoryPath + "/*");
+        ProcessBuilder pb = new ProcessBuilder(RAINBOW_BINARY, "-d", modelFilePath, "--index", trainingDataDirectoryPath + "/shouldRespond", trainingDataDirectoryPath + "/shouldntRespond");
         Process trainingProcess = null;
         try {
             System.out.println("Training model with arguments: " + pb.command().toString());
             trainingProcess = pb.start();
+            BufferedReader stdOut = new BufferedReader(new InputStreamReader(trainingProcess.getInputStream()));
+            String line;
+            while ((line = stdOut.readLine()) != null) {
+                System.out.println("Training: " + line);
+            }
             trainingProcess.waitFor();
+            System.out.println("Training finished with code: " + trainingProcess.exitValue());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -79,24 +93,58 @@ public class RainbowClassifier implements Classifier {
 
     @Override
     public EmailClass classify(Email email) {
-        ProcessBuilder pb = new ProcessBuilder("/usr/local/bin/rainbow", "-d", modelFilePath, "--query");
-        Process classifierProcess = null;
+        /* Not implemented yet. Meh. */
+        return EmailClass.SHOULD_RESPOND_TO;
+    }
+
+    @Override
+    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
+        String testDirectoryPath = workingDirectory + "/test_data";
+        File testDirectory = new File(testDirectoryPath);
+        /* this is goofy but required */
+        File testDirectory1 = new File(testDirectoryPath + "/shouldRespond/");
+        File testDirectory2 = new File(testDirectoryPath + "/shouldntRespond/");
+        deleteOldStuff(testDirectory);
+        testDirectory.mkdir();
+        testDirectory1.mkdir();
+        testDirectory2.mkdir();
+        for (int i = 0; i < emails.size(); i++) {
+            File emailFile = new File(testDirectoryPath + "/shouldRespond/" + i);
+            try {
+                BufferedWriter emailWriter = new BufferedWriter(new FileWriter(emailFile));
+                emailWriter.write(emails.get(i).getContent());
+                emailWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String testDataPath = workingDirectory + "/" + "test_data/";
+        ProcessBuilder pb = new ProcessBuilder(RAINBOW_BINARY, "-d", modelFilePath, "--test-files", testDataPath);
+        System.out.println(pb.command());
         try {
-            classifierProcess = pb.start();
-            OutputStream stdIn = classifierProcess.getOutputStream();
-            BufferedReader stdOut = new BufferedReader(new InputStreamReader(classifierProcess.getInputStream()));
-            stdIn.write(email.getContent().getBytes());
-            stdIn.flush();
-            stdIn.close();
+            /* Execute the rainbow classifier and read its results in from stdin */
+            Process classifier = pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(classifier.getInputStream()));
+            Map<Email, EmailClass> classes = Maps.newHashMap();
 
             String line;
-            while ((line = stdOut.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 System.out.println(line);
+                Matcher trueMatcher = truePattern.matcher(line);
+                Matcher falseMatcher = falsePattern.matcher(line);
+
+                if (trueMatcher.find()) {
+                    classes.put(emails.get(Integer.parseInt(trueMatcher.group(1))), EmailClass.SHOULD_RESPOND_TO);
+                } else if (falseMatcher.find()) {
+                    classes.put(emails.get(Integer.parseInt(falseMatcher.group(1))), EmailClass.SHOULDNT_RESPOND_TO);
+                }
             }
+
+            return classes;
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return EmailClass.SHOULD_RESPOND_TO;
+        return Maps.newHashMap();
     }
 }

@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Map;
 
 public class Experiment {
     private final Oracle trueClassifier;
@@ -10,10 +11,14 @@ public class Experiment {
     }
 
     public Statistics execute(List<Email> emails) {
+        Map<Email, Classifier.EmailClass> predictedClasses = classifier.batchClassify(emails);
+        Map<Email, Classifier.EmailClass> trueClasses = trueClassifier.batchClassify(emails);
+
         Statistics stats = new Statistics();
         for (Email email : emails) {
-            Classifier.EmailClass trueClass = trueClassifier.classify(email);
-            Classifier.EmailClass predictedClass = classifier.classify(email);
+            Classifier.EmailClass trueClass = trueClasses.get(email);
+            if (!predictedClasses.containsKey(email)) { continue; }
+            Classifier.EmailClass predictedClass = predictedClasses.get(email);
 
             if (predictedClass == Classifier.EmailClass.SHOULD_RESPOND_TO && predictedClass == trueClass) {
                 stats.truePositive++;

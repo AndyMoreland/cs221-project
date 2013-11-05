@@ -1,6 +1,12 @@
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SimpleClassifier implements Classifier {
@@ -38,5 +44,16 @@ public class SimpleClassifier implements Classifier {
         } else {
             return EmailClass.SHOULDNT_RESPOND_TO;
         }
+    }
+
+    @Override
+    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
+        Map<Email, EmailClass> classes = Maps.newHashMap();
+
+        for (Email email : emails) {
+            classes.put(email, classify(email));
+        }
+
+        return classes;
     }
 }

@@ -1,7 +1,11 @@
+import com.google.common.collect.Maps;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This classifier is intended to provide "ground truth" -- it should return the correct answer.
@@ -38,5 +42,16 @@ public class CorrectClassifier implements Oracle {
         } else {
             return EmailClass.SHOULDNT_RESPOND_TO;
         }
+    }
+
+    @Override
+    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
+        Map<Email, EmailClass> classes = Maps.newHashMap();
+
+        for (Email email : emails) {
+            classes.put(email, classify(email));
+        }
+
+        return classes;
     }
 }

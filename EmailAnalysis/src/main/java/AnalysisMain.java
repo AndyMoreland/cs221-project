@@ -9,17 +9,18 @@ public class AnalysisMain {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:/Users/andrew/cs221-project/scrape.db");
         Statement statement = connection.createStatement();
         ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
-        Classifier simpleClassifier = new SimpleClassifier(connection, "andymo@stanford.edu");
+        SimpleClassifier simpleClassifier = new SimpleClassifier(connection, "andymo@stanford.edu");
         CorrectClassifier oracle = new CorrectClassifier(connection, "andymo@stanford.edu");
 
         List<Email> training = new ArrayList<Email>();
         List<Email> test = new ArrayList<Email>();
         splitData(Email.parseEmails(emailResults), training, test);
 
-        Classifier rainbowClassifier = new RainbowClassifier("/Users/andrew/cs221-project", training, oracle);
+        RainbowClassifier rainbowClassifier = new RainbowClassifier("/Users/andrew/cs221-project", training, oracle);
+        Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
 
         System.out.println("Executing experiment");
-        Experiment experiment = new Experiment(oracle, rainbowClassifier);
+        Experiment experiment = new Experiment(oracle, combinedClassifier );
         Statistics stats = experiment.execute(test);
 
         System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());

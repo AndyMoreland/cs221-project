@@ -88,14 +88,14 @@ public class Email {
         }
     }
 
-    public static String getSqlDateTime(DateTime dateTime) {
+    public String getSqlDateTime() {
         DateTimeFormatter isoFormatter = ISODateTimeFormat.dateTimeParser();
         StringWriter writer = new StringWriter();
         try {
-            isoFormatter.printTo(writer, dateTime);
+            isoFormatter.printTo(writer, timestamp);
             return writer.toString();
         } catch (IOException e) {
-            System.err.println("Failed to format " + dateTime);
+            System.err.println("Failed to format " + timestamp);
             return null;
         }
     }

@@ -40,7 +40,7 @@ def main()
       String :content
       String :to
       String :from
-      String :timestamp
+      DateTime :timestamp
       Bignum :thread_id
     end
     db.create_table :cleaned_emails do
@@ -76,7 +76,7 @@ def main()
       # body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
       # body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
 
-      values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, body, email.thread_id]
+      values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", DateTime.parse(email.date), body, email.thread_id]
     rescue Exception => e
       puts "Skipping malformed email #{e}"
     end

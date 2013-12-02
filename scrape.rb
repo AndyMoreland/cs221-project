@@ -43,6 +43,16 @@ def main()
       String :timestamp
       Bignum :thread_id
     end
+    db.create_table :cleaned_emails do
+      primary_key :id
+      
+      String :content
+      String :to
+      String :from
+      String :timestamp
+      Bignum :thread_id
+    end
+
   rescue
     puts "#{DBFILE} already exists. Delete it to re-scrape."
     exit 1

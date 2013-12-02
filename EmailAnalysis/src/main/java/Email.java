@@ -1,7 +1,7 @@
 import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -43,6 +43,26 @@ public class Email {
         this.content = content;
     }
 
+    public long getThreadId() {
+        return threadId;
+    }
+
+    private DateTime getDateTime(String dateString) {
+        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZ");
+        SimpleDateFormat secondFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss ZZZZ");
+
+        try {
+            return new DateTime(format.parse(dateString));
+        } catch (ParseException e) {
+            try {
+                return new DateTime(secondFormat.parse(dateString));
+            } catch (ParseException e1) {
+                System.err.println("Failed to parse datetime: " + dateString);
+                return null;
+            }
+        }
+    }
+
     public static List<Email> parseEmails(ResultSet results) {
         List<Email> emails = Lists.newArrayList();
         try {
@@ -63,23 +83,22 @@ public class Email {
         return emails;
     }
 
-    public long getThreadId() {
-        return threadId;
+    public static List<Email> getEmails(Connection connection) throws SQLException {
+        Statement statement = connection.createStatement();
+        ResultSet emailResults = statement.executeQuery("SELECT * FROM cleaned_emails");
+        return Email.parseEmails(emailResults);
     }
 
-    private DateTime getDateTime(String dateString) {
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZ");
-        SimpleDateFormat secondFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss ZZZZ");
+    public void saveToCleanTable(Connection connection) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
+                "cleaned_emails" + " (" + TO_COLUMN + "," + FROM_COLUMN + "," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + THREAD_ID_COLUMN + ") VALUES (?, ?, ?, ?, ?)");
 
-        try {
-            return new DateTime(format.parse(dateString));
-        } catch (ParseException e) {
-            try {
-                return new DateTime(secondFormat.parse(dateString));
-            } catch (ParseException e1) {
-                System.err.println("Failed to parse datetime: " + dateString);
-                return null;
-            }
-        }
+        statement.setString(0, getTo());
+        statement.setString(1, getFrom());
+        statement.setString(2, getTimestamp());
+        statement.setString(3, getContent());
+        statement.setLong(4, getThreadId());
+
+        statement.execute();
     }
 }

@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 

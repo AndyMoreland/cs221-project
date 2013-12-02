@@ -60,13 +60,21 @@ def main()
 
   puts "Working..."
   values = []
-  (gmail.inbox.find.concat gmail.mailbox('[Gmail]/Sent Mail').find).each do |email|
+
+  # Clear out spam
+  gmail.mailbox('[Gmail]/Spam').find.each do |email|
+    email.delete!
+  end
+
+  # Scrape all mail, including sent and archived mail
+  gmail.mailbox('[Gmail]/All Mail').find.each do |email|
     begin
       to = email.to[0]
       from = email.from[0]
       body = email.body.to_s
-      body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
-      body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
+      # Data now cleaned later in dataflow
+      # body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
+      # body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
 
       values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", email.date, body, email.thread_id]
     rescue Exception => e

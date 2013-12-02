@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import java.sql.*;
 import java.text.ParseException;
 import java.util.*;
@@ -12,7 +14,7 @@ public class AnalysisMain {
         SimpleClassifier simpleClassifier = new SimpleClassifier(connection, Config.EMAIL_ADDRESS);
         CorrectClassifier oracle = new CorrectClassifier(connection, Config.EMAIL_ADDRESS);
 
-        RainbowClassifier rainbowClassifier = new RainbowClassifier("/Users/andrew/cs221-project");
+        RainbowClassifier rainbowClassifier = new RainbowClassifier(Config.PROJECT_PATH);
         rainbowClassifier.train(splitter.getTrainingData(), oracle);
         Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
 

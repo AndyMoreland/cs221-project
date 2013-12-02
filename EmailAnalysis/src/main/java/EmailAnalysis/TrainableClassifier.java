@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import java.util.List;
 
 /* A classifier which is able to be trained on some set of data. Most classifiers are trainable. */

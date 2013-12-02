@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import com.google.common.collect.Maps;
 
 import java.util.List;

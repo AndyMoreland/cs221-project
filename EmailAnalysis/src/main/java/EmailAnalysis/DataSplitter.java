@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import java.util.List;
 
 /** Splits the data into training and test. */

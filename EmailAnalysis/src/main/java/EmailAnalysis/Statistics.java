@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 public class Statistics {
     public int truePositive = 0;
     public int falsePositive = 0;

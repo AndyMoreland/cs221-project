@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
@@ -5,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * DataSplitter which ignores emails that were sent by the user specified by userEmailAddress
+ * EmailAnalysis.DataSplitter which ignores emails that were sent by the user specified by userEmailAddress
  */
 public class DataSplitterImpl implements DataSplitter {
     private List<Email> training;
@@ -13,7 +15,7 @@ public class DataSplitterImpl implements DataSplitter {
     private String userEmailAddress;
 
     /**
-     * Construct a DataSplitterImpl
+     * Construct a EmailAnalysis.DataSplitterImpl
      * @param userEmailAddress Emails sent by this address will be ignored.
      */
     public DataSplitterImpl(String userEmailAddress) {

@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 

@@ -1,3 +1,5 @@
+package EmailAnalysis;
+
 import java.sql.*;
 import java.text.ParseException;
 import java.util.*;
@@ -5,7 +7,7 @@ import java.util.*;
 public class AnalysisMain {
     public static void main(String argv[]) throws ParseException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:" + Config.DB_PATH);
-        List<Email> emails = getEmails(connection);
+        List<Email> emails = Email.getEmails(connection);
         DataSplitter splitter = new DataSplitterImpl(Config.EMAIL_ADDRESS);
         splitter.splitData(emails);
 
@@ -30,11 +32,5 @@ public class AnalysisMain {
         System.out.println("True negative: " + stats.trueNegative);
         System.out.println("False positive: " + stats.falsePositive);
         System.out.println("False negative: " + stats.falseNegative);
-    }
-
-    private static List<Email> getEmails(Connection connection) throws SQLException {
-        Statement statement = connection.createStatement();
-        ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
-        return Email.parseEmails(emailResults);
     }
 }

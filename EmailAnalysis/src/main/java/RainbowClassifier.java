@@ -8,24 +8,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /* You'll need to have the rainbow classifier in /usr/local/bin/rainbow" */
-public class RainbowClassifier implements Classifier {
+public class RainbowClassifier implements TrainableClassifier {
     public static final String RAINBOW_BINARY = "/usr/local/bin/rainbow";
     private String workingDirectory;
     private String modelFilePath;
-    private final List<Email> trainingData;
     private Oracle oracle;
     private Pattern falsePattern = Pattern.compile(".*\\/(\\d+) shouldRespond shouldntRespond:([0-9.]+) .*");
     private Pattern truePattern = Pattern.compile(".*\\/(\\d+) shouldRespond shouldRespond:([0-9.]+) .*");
 
-    public RainbowClassifier(String workingDirectory, List<Email> trainingData, Oracle oracle) {
+    public RainbowClassifier(String workingDirectory) {
         this.workingDirectory = workingDirectory;
-        this.trainingData = trainingData;
-        this.oracle = oracle;
-
-        trainModel();
     }
 
-    private void trainModel() {
+    public void train(List<Email> trainingData, Oracle oracle) {
         String trainingDataDirectoryPath = workingDirectory + "/" + "training_data";
         File trainingDataDirectory = new File(trainingDataDirectoryPath);
         deleteOldStuff(trainingDataDirectory);
@@ -61,7 +56,9 @@ public class RainbowClassifier implements Classifier {
         }
 
         /* Then we train the model on the files. */
-        ProcessBuilder pb = new ProcessBuilder(RAINBOW_BINARY, "-d", modelFilePath, "--index", trainingDataDirectoryPath + "/shouldRespond", trainingDataDirectoryPath + "/shouldntRespond");
+        ProcessBuilder pb = new ProcessBuilder(RAINBOW_BINARY,
+                "-d", modelFilePath,
+                "--index", trainingDataDirectoryPath + "/shouldRespond", trainingDataDirectoryPath + "/shouldntRespond");
         Process trainingProcess = null;
         try {
             System.out.println("Training model with arguments: " + pb.command().toString());

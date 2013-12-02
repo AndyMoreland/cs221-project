@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This classifier is intended to provide "ground truth" -- it should return the correct answer.
+ * This classifier is intended to provide "ground truth" -- it should return the correct answer for all emails passed to it.
  */
 public class CorrectClassifier implements Oracle {
     private final Connection connection;

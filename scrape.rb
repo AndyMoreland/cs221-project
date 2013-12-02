@@ -49,7 +49,7 @@ def main()
       String :content
       String :to
       String :from
-      String :timestamp
+      DateTime :timestamp
       Bignum :thread_id
     end
 

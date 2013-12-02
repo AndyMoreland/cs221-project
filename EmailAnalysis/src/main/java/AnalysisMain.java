@@ -17,7 +17,7 @@ public class AnalysisMain {
         List<Email> test = new ArrayList<Email>();
         splitData(Email.parseEmails(emailResults), training, test);
 
-        RainbowClassifier rainbowClassifier = new RainbowClassifier("/Users/andrew/cs221-project", training, oracle);
+        RainbowClassifier rainbowClassifier = new RainbowClassifier(Config.PROJECT_PATH, training, oracle);
         Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
 
         System.out.println("Executing experiment");
@@ -25,6 +25,10 @@ public class AnalysisMain {
         Statistics stats = experiment.execute(test);
 
         System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
+        System.out.println("True positive: " + stats.truePositive);
+        System.out.println("True negative: " + stats.trueNegative);
+        System.out.println("False positive: " + stats.falsePositive);
+        System.out.println("False negative: " + stats.falseNegative);
 
     }
 

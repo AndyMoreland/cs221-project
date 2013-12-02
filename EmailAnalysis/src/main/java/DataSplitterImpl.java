@@ -1,5 +1,6 @@
 import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class DataSplitterImpl implements DataSplitter {
      */
     public DataSplitterImpl(String userEmailAddress) {
         this.userEmailAddress = userEmailAddress;
+        training = new ArrayList<Email>();
+        test = new ArrayList<Email>();
     }
 
     @Override
@@ -25,10 +28,10 @@ public class DataSplitterImpl implements DataSplitter {
 
         Collections.shuffle(receivedEmails);
         int i = 0;
-        for(; i < emails.size() * 0.7; i++){
+        for(; i < receivedEmails.size() * 0.7; i++){
             training.add(receivedEmails.get(i));
         }
-        for(; i < emails.size(); i++){
+        for(; i < receivedEmails.size(); i++){
             test.add(receivedEmails.get(i));
         }
     }

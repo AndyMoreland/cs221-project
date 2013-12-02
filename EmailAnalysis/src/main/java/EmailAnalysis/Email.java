@@ -91,15 +91,21 @@ public class Email {
         return Email.parseEmails(emailResults);
     }
 
+    public static List<Email> getRawEmails(Connection connection) throws SQLException {
+        Statement statement = connection.createStatement();
+        ResultSet emailResults = statement.executeQuery("SELECT * FROM emails");
+        return Email.parseEmails(emailResults);
+    }
+
     public void saveToCleanTable(Connection connection) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
-                "cleaned_emails" + " (" + TO_COLUMN + "," + FROM_COLUMN + "," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + THREAD_ID_COLUMN + ") VALUES (?, ?, ?, ?, ?)");
+                "cleaned_emails" + " (\"" + TO_COLUMN + "\",\"" + FROM_COLUMN + "\"," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + THREAD_ID_COLUMN + ") VALUES (?, ?, ?, ?, ?)");
 
-        statement.setString(0, getTo());
-        statement.setString(1, getFrom());
-        statement.setString(2, getTimestamp());
-        statement.setString(3, getContent());
-        statement.setLong(4, getThreadId());
+        statement.setString(1, getTo());
+        statement.setString(2, getFrom());
+        statement.setString(3, getTimestamp());
+        statement.setString(4, getContent());
+        statement.setLong(5, getThreadId());
 
         statement.execute();
     }

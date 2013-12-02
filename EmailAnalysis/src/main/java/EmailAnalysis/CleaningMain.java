@@ -13,10 +13,12 @@ public class CleaningMain {
         try {
             List<Email> emails = null;
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + Config.DB_PATH);
-            emails = Email.getEmails(connection);
+            emails = Email.getRawEmails(connection);
             EmailCleaner cleaner = new EmailCleanerImpl();
 
+            int i = 0;
             for (Email email : emails) {
+                System.out.println("Cleaning email " + i++);
                 Email cleanedEmail = cleaner.cleanEmail(email);
                 cleanedEmail.saveToCleanTable(connection);
             }

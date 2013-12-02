@@ -5,8 +5,45 @@ require 'sqlite3'
 require 'sequel'
 require 'io/console'
 require 'cgi'
+require 'thread'
 
 DBFILE = "scrape.db"
+
+class ThreadPool
+  def initialize(size)
+    @size = size
+    @jobs = Queue.new
+    @pool = Array.new(@size) do |i|
+      Thread.new do
+        Thread.current[:id] = i
+        catch(:exit) do
+          loop do
+            job, args = @jobs.pop
+            puts "Thread #{i} accepting job"
+            job.call(*args)
+          end
+        end
+      end
+    end
+  end
+
+  def schedule(*args, &block)
+    @jobs << [block, args]
+  end
+
+  def shutdown
+    @size.times do
+      schedule { throw :exit }
+    end
+    @pool.map(&:join)
+  end
+
+  def wait_for_shutdown
+    sleep(10) until @jobs.size == 0
+    shutdown
+  end
+
+end
 
 def usage()
   puts "Usage: ruby scrape.rb username [password]"
@@ -68,34 +105,37 @@ def main()
 
   # Scrape all mail, including sent and archived mail
   mails = gmail.mailbox('[Gmail]/All Mail').find
-  i = 0
-  mails.each do |email|
-    puts "Scraped email #{i} out of #{mails.size}"
-    begin
-      to = email.to[0]
-      from = email.from[0]
-      part = (email.multipart? ? (email.text_part || email.html_part) : email)
-      body = ""
-      unless part.nil?
-        body = part.body.decoded
+  pool = ThreadPool.new(32)
+  for i in 0..mails.size-1 do
+    pool.schedule i do |i|
+      puts "Scraped email #{i} out of #{mails.size}"
+      email = mails[i]
+      begin
+        to = email.to[0]
+        from = email.from[0]
+        part = (email.multipart? ? (email.text_part || email.html_part) : email)
+        body = ""
+        unless part.nil?
+          body = part.body.decoded
+        end
+        # Data now cleaned later in dataflow
+        # body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
+        # body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
+
+        values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", DateTime.parse(email.date), body, email.thread_id]
+      rescue Exception => e
+        puts "Skipping malformed email: #{e}"
       end
-      # Data now cleaned later in dataflow
-      # body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
-      # body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
 
-      values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", DateTime.parse(email.date), body, email.thread_id]
-    rescue Exception => e
-      puts "Skipping malformed email: #{e}"
-    end
-    i = i + 1
-
-    if i % 10 == 0
-      db[:emails].import([:to, :from, :timestamp, :content, :thread_id], values)
-      values = []
-      puts "Importing batch of emails."
+      if i % 10 == 0
+        db[:emails].import([:to, :from, :timestamp, :content, :thread_id], values)
+        values = []
+        puts "Importing batch of emails."
+      end
     end
   end 
 
+  pool.wait_for_shutdown
   db[:emails].import([:to, :from, :timestamp, :content, :thread_id], values)
   puts "Created #{DBFILE} from #{db[:emails].count} emails."
 

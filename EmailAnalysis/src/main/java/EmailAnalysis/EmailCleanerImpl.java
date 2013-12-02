@@ -25,19 +25,19 @@ public class EmailCleanerImpl implements EmailCleaner {
         content = removeAttachments(content);
         content = removeHTMLTags(content);
         content = content.toLowerCase();
+        content = removeLinebreaks(content);
         content = removePunctuation(content);
         content = removeSignature(content);
-        content = removeLinebreaks(content);
 
         List<String> words = Lists.newArrayList(content.split("\\s+"));
         words = removeStopWords(words);
-        String newContent = Joiner.on(" ").join(words);
+        String newContent = Joiner.on(" ").skipNulls().join(words);
 
         return new Email(email.getTo(), email.getFrom(), email.getThreadId(), email.getTimestamp(), newContent);
     }
 
     private String removeHTMLTags(String content) {
-        return content.replaceAll("<p>", "").replaceAll("</p>", "").replaceAll("<span .*?>", "").replaceAll("</span>", "");
+        return content.replaceAll("<p>", "").replaceAll("</p>", "").replaceAll("<span.*?>", "").replaceAll("</span>", "");
     }
 
     private String removeAttachments(String content) {
@@ -53,14 +53,13 @@ public class EmailCleanerImpl implements EmailCleaner {
     }
 
     private List<String> removeStopWords(List<String> content) {
-        List<String> newContent = Lists.newArrayList();
         for (int i = 0; i < content.size(); i++) {
             if (stopWords.contains(content.get(i))) {
-                content.add(i, null);
+                content.set(i, null);
             }
         }
 
-        return newContent;
+        return content;
     }
 
     private String removeSignature(String content) {
@@ -75,7 +74,7 @@ public class EmailCleanerImpl implements EmailCleaner {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(STOP_WORDS_FILE));
             String line;
-            Set<String> stopWords = Sets.newHashSet();
+            stopWords = Sets.newHashSet();
             while ((line = reader.readLine()) != null) {
                 stopWords.add(line);
             }

@@ -9,7 +9,7 @@ public class CleaningMain {
 
     public static final String CLEANED_EMAILS_TABLE = "cleaned_emails";
 
-    private static void main(String argv[]) {
+    public static void main(String argv[]) {
         try {
             List<Email> emails = null;
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + Config.DB_PATH);

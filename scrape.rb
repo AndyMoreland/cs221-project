@@ -19,7 +19,6 @@ class ThreadPool
         catch(:exit) do
           loop do
             job, args = @jobs.pop
-            puts "Thread #{i} accepting job"
             job.call(*args)
           end
         end

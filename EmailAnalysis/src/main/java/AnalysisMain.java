@@ -9,15 +9,20 @@ public class AnalysisMain {
         DataSplitter splitter = new DataSplitterImpl(Config.EMAIL_ADDRESS);
         splitter.splitData(emails);
 
-        SimpleClassifier simpleClassifier = new SimpleClassifier(connection, Config.EMAIL_ADDRESS);
+        // SimpleClassifier simpleClassifier = new SimpleClassifier(connection, Config.EMAIL_ADDRESS);
         CorrectClassifier oracle = new CorrectClassifier(connection, Config.EMAIL_ADDRESS);
 
-        RainbowClassifier rainbowClassifier = new RainbowClassifier(Config.PROJECT_PATH);
-        rainbowClassifier.train(splitter.getTrainingData(), oracle);
-        Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
+        // RainbowClassifier rainbowClassifier = new RainbowClassifier(Config.PROJECT_PATH);
+        // rainbowClassifier.train(splitter.getTrainingData(), oracle);
+
+        VowpalWabbitClassifier vowpalWabbitClassifier = new VowpalWabbitClassifier(Config.PROJECT_PATH);
+        vowpalWabbitClassifier.train(splitter.getTrainingData(), oracle);
+
+        // Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
 
         System.out.println("Executing experiment");
-        Experiment experiment = new Experiment(oracle, combinedClassifier );
+        // Experiment experiment = new Experiment(oracle, combinedClassifier );
+        Experiment experiment = new Experiment(oracle, vowpalWabbitClassifier);
         Statistics stats = experiment.execute(splitter.getTestData());
 
         System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());

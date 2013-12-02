@@ -67,18 +67,32 @@ def main()
   end
 
   # Scrape all mail, including sent and archived mail
-  gmail.mailbox('[Gmail]/All Mail').find.each do |email|
+  mails = gmail.mailbox('[Gmail]/All Mail').find
+  i = 0
+  mails.each do |email|
+    puts "Scraped email #{i} out of #{mails.size}"
     begin
       to = email.to[0]
       from = email.from[0]
-      body = email.body.to_s
+      part = (email.multipart? ? (email.text_part || email.html_part) : email)
+      body = ""
+      unless part.nil?
+        body = part.body.decoded
+      end
       # Data now cleaned later in dataflow
       # body.gsub!(/<blockquote(\s|\S)*<\/blockquote>/, "") # remove nested conversations
       # body.gsub!(/--[a-f0-9]+--(\s|\S)*/, "") # remove attachments, (--HEXGARBAGE-- and everything after it)
 
       values.push ["#{to.mailbox}@#{to.host}", "#{from.mailbox}@#{from.host}", DateTime.parse(email.date), body, email.thread_id]
     rescue Exception => e
-      puts "Skipping malformed email #{e}"
+      puts "Skipping malformed email: #{e}"
+    end
+    i = i + 1
+
+    if i % 10 == 0
+      db[:emails].import([:to, :from, :timestamp, :content, :thread_id], values)
+      values = []
+      puts "Importing batch of emails."
     end
   end 
 

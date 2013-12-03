@@ -10,23 +10,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class EmailCleanerImpl implements EmailCleaner {
     private static final String STOP_WORDS_FILE = "stopwords.txt";
     private Set<String> stopWords;
-    private Oracle oracle;
 
-    public EmailCleanerImpl(Oracle oracle) {
-        this.oracle = oracle;
+    public EmailCleanerImpl() {
         stopWords = loadStopWords();
     }
 
-    public EmailCleanerImpl() {
-        this(null);
-    }
-
     @Override
-    public Email cleanEmail(Email email) {
+    public CleanedEmail cleanEmail(Email email) {
         String content = email.getContent();
         content = removeQuotedConversations(content);
         content = removeAttachments(content);
@@ -37,16 +32,10 @@ public class EmailCleanerImpl implements EmailCleaner {
         content = removeSignature(content);
 
         List<String> words = Lists.newArrayList(content.split("\\s+"));
-        words = removeStopWords(words);
+//        words = removeStopWords(words);
         String newContent = Joiner.on(" ").skipNulls().join(words);
-        boolean shouldRespondTo;
-        if (oracle != null) {
-            shouldRespondTo = oracle.classify(email) == Classifier.EmailClass.SHOULD_RESPOND_TO;
-        } else {
-            shouldRespondTo = false;
-        }
 
-        return new Email(email.getTo(), email.getFrom(), email.getThreadId(), email.getTimestamp(), newContent, shouldRespondTo);
+        return new CleanedEmail(email, newContent, false);
     }
 
     private String removeHTMLTags(String content) {
@@ -59,7 +48,8 @@ public class EmailCleanerImpl implements EmailCleaner {
     }
 
     private String removeQuotedConversations(String content) {
-        return content.replaceAll("<blockquote>.*", "");
+        String intermediateContent = content.replaceAll("<blockquote>.*", "");
+        return Pattern.compile("^\\s*>.*", Pattern.MULTILINE).matcher(intermediateContent).replaceAll("");
     }
 
     private String removePunctuation(String content) {

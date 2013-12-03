@@ -9,32 +9,30 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class Email {
+    public static final String ID_COLUMN = "id";
     public static final String TO_COLUMN = "to";
     public static final String FROM_COLUMN = "from";
     public static final String TIMESTAMP_COLUMN = "timestamp";
     public static final String CONTENT_COLUMN = "content";
     public static final String THREAD_ID_COLUMN = "thread_id";
-    public static final String REPLIED_TO_COLUMN = "replied_to";
-    private static final String CLEANED_CONTENT_COLUMN = "clean_content";
 
+    private final long id;
     private final String to;
     private final String from;
     private final long threadId;
     private final String timestamp;
     private final String content;
 
-
-    private final boolean repliedTo;
-
-    public boolean isRepliedTo() {
-        return repliedTo;
+    public Email(long id, String to, String from, long threadId, String timestamp, String content) {
+        this.id = id;
+        this.to = to;
+        this.from = from;
+        this.threadId = threadId;
+        this.timestamp = timestamp;
+        this.content = content;
     }
 
     public String getContent() {
-        return content;
-    }
-
-    public String getCleanedContent() {
         return content;
     }
 
@@ -48,19 +46,6 @@ public class Email {
 
     public String getTo() {
         return to;
-    }
-
-    public Email(String to, String from, long threadId, String timestamp, String content) {
-        this(to, from, threadId, timestamp, content, false);
-    }
-
-    public Email(String to, String from, long threadId, String timestamp, String content, boolean repliedTo) {
-        this.to = to;
-        this.from = from;
-        this.threadId = threadId;
-        this.timestamp = timestamp;
-        this.content = content;
-        this.repliedTo = repliedTo;
     }
 
     public long getThreadId() {
@@ -88,6 +73,7 @@ public class Email {
         try {
             while (results.next()) {
                 emails.add(new Email(
+                        results.getLong(ID_COLUMN),
                         results.getString(TO_COLUMN),
                         results.getString(FROM_COLUMN),
                         results.getLong(THREAD_ID_COLUMN),
@@ -114,21 +100,13 @@ public class Email {
         return Email.parseEmails(emailResults);
     }
 
-    public void saveToCleanTable(Connection connection) throws SQLException {
-//        PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
-//                "cleaned_emails" + " (\"" + TO_COLUMN + "\",\"" + FROM_COLUMN + "\"," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + CLEANED_CONTENT_COLUMN + "," + THREAD_ID_COLUMN + "," + REPLIED_TO_COLUMN + ") VALUES (?, ?, ?, ?, ?)");
+    public long getId() {
+        return id;
+    }
 
-          PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
-                "cleaned_emails" + " (\"" + TO_COLUMN + "\",\"" + FROM_COLUMN + "\"," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + THREAD_ID_COLUMN + "," + REPLIED_TO_COLUMN + ") VALUES (?, ?, ?, ?, ?, ?)");
-
-
-        statement.setString(1, getTo());
-        statement.setString(2, getFrom());
-        statement.setString(3, getTimestamp());
-        statement.setString(4, getContent());
-        statement.setLong(5, getThreadId());
-        statement.setBoolean(6, isRepliedTo());
-
-        statement.execute();
+    public static Email fetchById(Connection connection, long id) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT * FROM emails WHERE id = ?");
+        statement.setLong(1, id);
+        return parseEmails(statement.executeQuery()).get(0);
     }
 }

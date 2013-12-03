@@ -24,12 +24,12 @@ public class CombinedClassifier implements Classifier {
     }
 
     @Override
-    public EmailClass classify(Email email) {
+    public EmailClass classify(CleanedEmail email) {
         return combineScores(rainbowClassifier.classify(email), simpleClassifier.classify(email));
     }
 
     @Override
-    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
+    public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         Map<Email, EmailClass> classes =  Maps.newHashMap();
         Map<Email, EmailClass> rainbowClasses = rainbowClassifier.batchClassify(emails);
         Map<Email, EmailClass> simpleClasses = simpleClassifier.batchClassify(emails);

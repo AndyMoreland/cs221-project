@@ -9,6 +9,6 @@ public interface Classifier {
         SHOULDNT_RESPOND_TO
     }
 
-    public EmailClass classify(Email email);
-    public Map<Email, EmailClass> batchClassify(List<Email> emails);
+    public EmailClass classify(CleanedEmail email);
+    public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails);
 }

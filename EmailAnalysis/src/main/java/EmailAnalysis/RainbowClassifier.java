@@ -17,12 +17,13 @@ public class RainbowClassifier implements TrainableClassifier {
     private Oracle oracle;
     private Pattern falsePattern = Pattern.compile(".*\\/(\\d+) shouldRespond shouldntRespond:([0-9.]+) .*");
     private Pattern truePattern = Pattern.compile(".*\\/(\\d+) shouldRespond shouldRespond:([0-9.]+) .*");
+    private Map<Email,EmailClass> classes;
 
     public RainbowClassifier(String workingDirectory) {
         this.workingDirectory = workingDirectory;
     }
 
-    public void train(List<Email> trainingData, Oracle oracle) {
+    public void train(List<CleanedEmail> trainingData, Oracle oracle) {
         String trainingDataDirectoryPath = workingDirectory + "/" + "training_data";
         File trainingDataDirectory = new File(trainingDataDirectoryPath);
         deleteOldStuff(trainingDataDirectory);
@@ -39,7 +40,7 @@ public class RainbowClassifier implements TrainableClassifier {
         try {
             System.out.println("Outputting training files to working directory: " + workingDirectory);
             int index = 0;
-            for (Email email : trainingData) {
+            for (CleanedEmail email : trainingData) {
                 File trainingDataFile;
 
                 if (oracle.classify(email) == EmailClass.SHOULD_RESPOND_TO) {
@@ -91,13 +92,17 @@ public class RainbowClassifier implements TrainableClassifier {
     }
 
     @Override
-    public EmailClass classify(Email email) {
-        /* Not implemented yet. Meh. */
-        return EmailClass.SHOULD_RESPOND_TO;
+    public EmailClass classify(CleanedEmail email) {
+        if (classes == null) {
+            System.err.println("Attempting to use rainbow classifier before running batch classification is incorrect.");
+            return null;
+        }
+
+        return classes.get(email);
     }
 
     @Override
-    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
+    public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         String testDirectoryPath = workingDirectory + "/test_data";
         File testDirectory = new File(testDirectoryPath);
         /* this is goofy but required */
@@ -125,11 +130,10 @@ public class RainbowClassifier implements TrainableClassifier {
             /* Execute the rainbow classifier and read its results in from stdin */
             Process classifier = pb.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(classifier.getInputStream()));
-            Map<Email, EmailClass> classes = Maps.newHashMap();
+            classes = Maps.newHashMap();
 
             String line;
             while ((line = reader.readLine()) != null) {
-                System.out.println(line);
                 Matcher trueMatcher = truePattern.matcher(line);
                 Matcher falseMatcher = falsePattern.matcher(line);
 

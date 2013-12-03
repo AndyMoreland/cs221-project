@@ -1,6 +1,7 @@
 package EmailAnalysis;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,7 +89,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
 
     @Override
     public EmailClass classify(Email email) {
-        // Fuck this noise run a bunch
+        // Fuck this noise, run a bunch
         return null;
     }
 
@@ -103,6 +104,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
             e.printStackTrace();
         }
 
+        Map<Email, EmailClass> results = new HashMap<Email, EmailClass>();
         ProcessBuilder pb = new ProcessBuilder(VW_BINARY, "-t", "--cache_file", "test.cache",
                 "-i", MODEL_FILENAME, "-d", testDataPath, "-p", "/dev/stdout", "--quiet");
         Process trainingProcess = null;
@@ -110,9 +112,15 @@ public class VowpalWabbitClassifier implements TrainableClassifier
             System.out.println("Testing model with arguments: " + pb.command().toString());
             trainingProcess = pb.start();
             BufferedReader stdOut = new BufferedReader(new InputStreamReader(trainingProcess.getInputStream()));
+
             String line;
-            while ((line = stdOut.readLine()) != null) {
+            for (int i = 0; (line = stdOut.readLine()) != null; i++) {
                 System.out.println("Testing: " + line);
+                if(line.contains("shouldrespond")){
+                    results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
+                } else {
+                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
+                }
             }
             trainingProcess.waitFor();
             System.out.println("Testing finished with code: " + trainingProcess.exitValue());
@@ -122,6 +130,6 @@ public class VowpalWabbitClassifier implements TrainableClassifier
             e.printStackTrace();
         }
 
-        return null; // TODO parse output
+        return results;
     }
 }

@@ -14,6 +14,8 @@ public class Email {
     public static final String TIMESTAMP_COLUMN = "timestamp";
     public static final String CONTENT_COLUMN = "content";
     public static final String THREAD_ID_COLUMN = "thread_id";
+    public static final String REPLIED_TO_COLUMN = "replied_to";
+    private static final String CLEANED_CONTENT_COLUMN = "clean_content";
 
     private final String to;
     private final String from;
@@ -21,7 +23,18 @@ public class Email {
     private final String timestamp;
     private final String content;
 
+
+    private final boolean repliedTo;
+
+    public boolean isRepliedTo() {
+        return repliedTo;
+    }
+
     public String getContent() {
+        return content;
+    }
+
+    public String getCleanedContent() {
         return content;
     }
 
@@ -38,11 +51,16 @@ public class Email {
     }
 
     public Email(String to, String from, long threadId, String timestamp, String content) {
+        this(to, from, threadId, timestamp, content, false);
+    }
+
+    public Email(String to, String from, long threadId, String timestamp, String content, boolean repliedTo) {
         this.to = to;
         this.from = from;
         this.threadId = threadId;
         this.timestamp = timestamp;
         this.content = content;
+        this.repliedTo = repliedTo;
     }
 
     public long getThreadId() {
@@ -74,8 +92,7 @@ public class Email {
                         results.getString(FROM_COLUMN),
                         results.getLong(THREAD_ID_COLUMN),
                         results.getString(TIMESTAMP_COLUMN),
-                        results.getString(CONTENT_COLUMN)
-                ));
+                        results.getString(CONTENT_COLUMN)));
             }
         } catch (SQLException e) {
             System.err.println("While attempting to read emails into memory, got error: ");
@@ -98,14 +115,19 @@ public class Email {
     }
 
     public void saveToCleanTable(Connection connection) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
-                "cleaned_emails" + " (\"" + TO_COLUMN + "\",\"" + FROM_COLUMN + "\"," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + THREAD_ID_COLUMN + ") VALUES (?, ?, ?, ?, ?)");
+//        PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
+//                "cleaned_emails" + " (\"" + TO_COLUMN + "\",\"" + FROM_COLUMN + "\"," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + CLEANED_CONTENT_COLUMN + "," + THREAD_ID_COLUMN + "," + REPLIED_TO_COLUMN + ") VALUES (?, ?, ?, ?, ?)");
+
+          PreparedStatement statement = connection.prepareStatement("INSERT INTO " +
+                "cleaned_emails" + " (\"" + TO_COLUMN + "\",\"" + FROM_COLUMN + "\"," + TIMESTAMP_COLUMN + "," + CONTENT_COLUMN + "," + THREAD_ID_COLUMN + "," + REPLIED_TO_COLUMN + ") VALUES (?, ?, ?, ?, ?, ?)");
+
 
         statement.setString(1, getTo());
         statement.setString(2, getFrom());
         statement.setString(3, getTimestamp());
         statement.setString(4, getContent());
         statement.setLong(5, getThreadId());
+        statement.setBoolean(6, isRepliedTo());
 
         statement.execute();
     }

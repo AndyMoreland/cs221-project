@@ -6,5 +6,5 @@ public interface Feature {
      * @param email
      * @return The value of the feature. No scale is specified.
      */
-    public float getValue(Email email);
+    public float getValue(CleanedEmail email);
 }

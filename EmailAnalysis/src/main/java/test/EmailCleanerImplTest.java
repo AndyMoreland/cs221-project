@@ -1,6 +1,5 @@
 package test;
 
-import EmailAnalysis.CorrectClassifier;
 import EmailAnalysis.Email;
 import EmailAnalysis.EmailCleaner;
 import EmailAnalysis.EmailCleanerImpl;
@@ -35,7 +34,13 @@ public class EmailCleanerImplTest {
         assertEquals("intense excitation", cleaner.cleanEmail(htmlEmail).getContent());
     }
 
+    @Test
+    public void testRemovesQuotedConversation() {
+        Email quotesEmail = createDummyEmailWithContent("exciting\n> exciting exciting\n> > exciting exciting");
+        assertEquals("exciting", cleaner.cleanEmail(quotesEmail).getContent());
+    }
+
     private static Email createDummyEmailWithContent(String content) {
-        return new Email("", "", 0, "", content, false);
+        return new Email(0, "", "", 0, "", content);
     }
 }

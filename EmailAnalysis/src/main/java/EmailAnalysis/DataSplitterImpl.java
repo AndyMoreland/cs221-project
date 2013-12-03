@@ -10,8 +10,8 @@ import java.util.List;
  * EmailAnalysis.DataSplitter which ignores emails that were sent by the user specified by userEmailAddress
  */
 public class DataSplitterImpl implements DataSplitter {
-    private List<Email> training;
-    private List<Email> test;
+    private List<CleanedEmail> training;
+    private List<CleanedEmail> test;
     private String userEmailAddress;
 
     /**
@@ -20,13 +20,13 @@ public class DataSplitterImpl implements DataSplitter {
      */
     public DataSplitterImpl(String userEmailAddress) {
         this.userEmailAddress = userEmailAddress;
-        training = new ArrayList<Email>();
-        test = new ArrayList<Email>();
+        training = new ArrayList<CleanedEmail>();
+        test = new ArrayList<CleanedEmail>();
     }
 
     @Override
-    public void splitData(List<Email> emails) {
-        List<Email> receivedEmails = getReceivedEmails(emails);
+    public void splitData(List<CleanedEmail> emails) {
+        List<CleanedEmail> receivedEmails = getReceivedEmails(emails);
 
         Collections.shuffle(receivedEmails);
         int i = 0;
@@ -38,9 +38,9 @@ public class DataSplitterImpl implements DataSplitter {
         }
     }
 
-    private List<Email> getReceivedEmails(List<Email> emails) {
-        List<Email> receivedEmails = Lists.newArrayList();
-        for (Email email : emails) {
+    private List<CleanedEmail> getReceivedEmails(List<CleanedEmail> emails) {
+        List<CleanedEmail> receivedEmails = Lists.newArrayList();
+        for (CleanedEmail email : emails) {
             if (!email.getFrom().equals(userEmailAddress)) {
                 receivedEmails.add(email);
             }
@@ -50,12 +50,12 @@ public class DataSplitterImpl implements DataSplitter {
     }
 
     @Override
-    public List<Email> getTrainingData() {
+    public List<CleanedEmail> getTrainingData() {
         return training;
     }
 
     @Override
-    public List<Email> getTestData() {
+    public List<CleanedEmail> getTestData() {
         return test;
     }
 }

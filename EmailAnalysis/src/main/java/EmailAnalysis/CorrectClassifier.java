@@ -25,9 +25,10 @@ public class CorrectClassifier implements Oracle {
     private boolean didRespondToEmail(Email email) {
         PreparedStatement statement;
         try {
-            statement = connection.prepareStatement("SELECT count(*) as replies from emails WHERE thread_id = ? AND timestamp > ?");
+            statement = connection.prepareStatement("SELECT count(*) as replies from emails WHERE thread_id = ? AND timestamp > ? AND \"from\" = ?");
             statement.setLong(1, email.getThreadId());
             statement.setString(2, email.getTimestamp());
+            statement.setString(3, selfEmail);
             ResultSet laterResponses = statement.executeQuery();
             return laterResponses.getInt("replies") > 0;
         } catch (SQLException e) {
@@ -38,22 +39,27 @@ public class CorrectClassifier implements Oracle {
     }
 
     @Override
+    public EmailClass classify(CleanedEmail email) {
+        return classify((Email) email);
+    }
+
+    @Override
+    public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
+        Map<Email, EmailClass> classes = Maps.newHashMap();
+
+        for (CleanedEmail email : emails) {
+            classes.put(email, classify(email));
+        }
+
+        return classes;
+    }
+
+    @Override
     public EmailClass classify(Email email) {
         if (didRespondToEmail(email)) {
             return EmailClass.SHOULD_RESPOND_TO;
         } else {
             return EmailClass.SHOULDNT_RESPOND_TO;
         }
-    }
-
-    @Override
-    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
-        Map<Email, EmailClass> classes = Maps.newHashMap();
-
-        for (Email email : emails) {
-            classes.put(email, classify(email));
-        }
-
-        return classes;
     }
 }

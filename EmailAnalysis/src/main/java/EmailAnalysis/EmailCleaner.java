@@ -1,5 +1,5 @@
 package EmailAnalysis;
 
 public interface EmailCleaner {
-    public Email cleanEmail(Email email);
+    public CleanedEmail cleanEmail(Email email);
 }

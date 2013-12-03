@@ -16,12 +16,12 @@ public class CleaningMain {
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + Config.DB_PATH);
             deleteOldCleanedEmails(connection);
             emails = Email.getRawEmails(connection);
-            EmailCleaner cleaner = new EmailCleanerImpl(new CorrectClassifier(connection, Config.EMAIL_ADDRESS));
+            EmailCleaner cleaner = new EmailCleanerImpl();
 
             int i = 0;
             for (Email email : emails) {
                 System.out.println("Cleaning email " + i++);
-                Email cleanedEmail = cleaner.cleanEmail(email);
+                CleanedEmail cleanedEmail = cleaner.cleanEmail(email);
                 cleanedEmail.saveToCleanTable(connection);
             }
         } catch (SQLException e) {

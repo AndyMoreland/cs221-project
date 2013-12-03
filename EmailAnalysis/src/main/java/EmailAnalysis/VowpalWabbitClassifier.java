@@ -1,6 +1,5 @@
 package EmailAnalysis;
 
-import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -16,9 +15,11 @@ public class VowpalWabbitClassifier implements TrainableClassifier
     private static final String TRAINING_DATA_FILENAME = "vw_training_data.txt";
     private static final String MODEL_FILENAME = "vw.model";
     private static final String TEST_DATA_FILENAME = "vw_test_data.txt";
+    private static final Double THRESHOLD = 0.9;
 
     private String workingDirectory;
     private Oracle oracle;
+    private Map<Email,EmailClass> results;
 
 
     public VowpalWabbitClassifier(String workingDirectory){
@@ -26,8 +27,10 @@ public class VowpalWabbitClassifier implements TrainableClassifier
     }
 
     @Override
-    public void train(List<Email> trainingData, Oracle oracle) {
+    public void train(List<CleanedEmail> trainingData, Oracle oracle) {
         this.oracle = oracle;
+
+        deleteOldFiles();
 
         String trainingDataPath = null;
         try {
@@ -43,8 +46,9 @@ public class VowpalWabbitClassifier implements TrainableClassifier
                 "--cache_file", "train.cache",
                 "-d", trainingDataPath,
                 "-f", MODEL_FILENAME,
-                "-k", "--invert_hash", MODEL_FILENAME + ".readable",
-                "--passes", "10");
+//                "-k", "--invert_hash", MODEL_FILENAME + ".readable",
+                "--passes", "25",
+                "-q", "mm");
         Process trainingProcess = null;
         try {
             System.out.println("Training model with arguments: " + pb.command().toString());
@@ -53,7 +57,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
             BufferedReader stdErr = new BufferedReader(new InputStreamReader(trainingProcess.getErrorStream()));
             List<String> errorLines = IOUtils.readLines(stdErr);
             for (String errorLine : errorLines) {
-                System.err.println("VOWPAL WABBIT ERROR: " + errorLine);
+                System.err.println("VOWPAL WABBIT TRAINING: " + errorLine);
             }
             String line;
             while ((line = stdOut.readLine()) != null) {
@@ -68,7 +72,17 @@ public class VowpalWabbitClassifier implements TrainableClassifier
         }
     }
 
-    private String writeData(List<Email> source, String filename) throws IOException {
+    private void deleteOldFiles() {
+        File testCache = new File("test.cache");
+        File trainCache = new File("train.cache");
+        File modelFile = new File(MODEL_FILENAME);
+
+        testCache.delete();
+        trainCache.delete();
+        modelFile.delete();
+    }
+
+    private String writeData(List<CleanedEmail> source, String filename) throws IOException {
     // Setup filesystem
         String dataDirectoryPath = workingDirectory + "/" + DATA_DIR;
         String dataFilePath = dataDirectoryPath + "/" + filename;
@@ -83,7 +97,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
         System.out.println("Outputting vw files to directory: " + dataDirectoryPath);
 
         // Write data to file
-        for (Email email : source) {
+        for (CleanedEmail email : source) {
             // Class and label
             if (oracle.classify(email) == EmailClass.SHOULD_RESPOND_TO) {
                 dataFile.write("1 shouldrespond|");
@@ -102,14 +116,17 @@ public class VowpalWabbitClassifier implements TrainableClassifier
     }
 
     @Override
-    public EmailClass classify(Email email) {
-        // Fuck this noise, run a bunch
-        return null;
+    public EmailClass classify(CleanedEmail email) {
+        if (results == null) {
+            System.err.println("Attempting to use vowpal wabbit classifier before running batch classification is incorrect.");
+            return null;
+        }
+
+        return results.get(email);
     }
 
     @Override
-    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
-        Map<Email, EmailClass> classes = Maps.newHashMap();
+    public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         String testDataPath = null;
         try {
             System.out.println("Outputting vw test files.");
@@ -118,7 +135,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
             e.printStackTrace();
         }
 
-        Map<Email, EmailClass> results = new HashMap<Email, EmailClass>();
+        results = new HashMap<Email, EmailClass>();
         ProcessBuilder pb = new ProcessBuilder(VW_BINARY, "-t", "--cache_file", "test.cache",
                 "-i", MODEL_FILENAME, "-d", testDataPath, "-p", "/dev/stdout", "--quiet");
         Process trainingProcess = null;
@@ -129,15 +146,11 @@ public class VowpalWabbitClassifier implements TrainableClassifier
 
             String line;
             for (int i = 0; (line = stdOut.readLine()) != null; i++) {
-                if (i >= emails.size()) {
-                    System.err.println("Encountered extra lines: " + line);
-                }
-                if(line.contains("shouldrespond")){
+                double predictionValue = Double.parseDouble(line.substring(0, line.indexOf(" ")));
+                if (predictionValue > THRESHOLD){
                     results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
-                } else if (line.contains("shouldntrespond")){
-                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
                 } else {
-                    System.err.println("Encountered unexpected output: " + line);
+                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
                 }
             }
             trainingProcess.waitFor();

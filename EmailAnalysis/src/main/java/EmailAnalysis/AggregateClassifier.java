@@ -23,16 +23,16 @@ public class AggregateClassifier implements TrainableClassifier {
     }
 
     @Override
-    public EmailClass classify(Email email) {
+    public EmailClass classify(CleanedEmail email) {
         List<Float> featureValues = processEmail(email);
         System.err.println("Attempting to use an aggregate classifier without any meat in it.");
         return EmailClass.SHOULD_RESPOND_TO;
     }
 
     @Override
-    public Map<Email, EmailClass> batchClassify(List<Email> emails) {
+    public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         Map<Email, EmailClass> classes = Maps.newHashMap();
-        for (Email email : emails) {
+        for (CleanedEmail email : emails) {
             classes.put(email, classify(email));
         }
 
@@ -40,11 +40,11 @@ public class AggregateClassifier implements TrainableClassifier {
     }
 
     @Override
-    public void train(List<Email> trainingData, Oracle trueClassifier) {
+    public void train(List<CleanedEmail> trainingData, Oracle trueClassifier) {
         System.err.println("Currently unimplemented");
     }
 
-    private List<Float> processEmail(Email email) {
+    private List<Float> processEmail(CleanedEmail email) {
         List<Float> featureValues = Lists.newArrayList();
         for (Feature feature : features) {
             featureValues.add(feature.getValue(email));

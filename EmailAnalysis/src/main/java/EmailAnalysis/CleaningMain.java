@@ -3,6 +3,7 @@ package EmailAnalysis;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 public class CleaningMain {
@@ -13,8 +14,9 @@ public class CleaningMain {
         try {
             List<Email> emails = null;
             Connection connection = DriverManager.getConnection("jdbc:sqlite:" + Config.DB_PATH);
+            deleteOldCleanedEmails(connection);
             emails = Email.getRawEmails(connection);
-            EmailCleaner cleaner = new EmailCleanerImpl();
+            EmailCleaner cleaner = new EmailCleanerImpl(new CorrectClassifier(connection, Config.EMAIL_ADDRESS));
 
             int i = 0;
             for (Email email : emails) {
@@ -26,5 +28,11 @@ public class CleaningMain {
             System.err.println("Encountered SQL exception while cleaning data. Error was:");
             e.printStackTrace();
         }
+    }
+
+    private static void deleteOldCleanedEmails(Connection connection) throws SQLException {
+        System.out.println("Deleting old cleaned emails table.");
+        Statement statement = connection.createStatement();
+        statement.executeUpdate("DELETE FROM " + CLEANED_EMAILS_TABLE + ";");
     }
 }

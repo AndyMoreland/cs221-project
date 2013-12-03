@@ -3,6 +3,7 @@ package EmailAnalysis;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.jsoup.Jsoup;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,9 +14,15 @@ import java.util.Set;
 public class EmailCleanerImpl implements EmailCleaner {
     private static final String STOP_WORDS_FILE = "stopwords.txt";
     private Set<String> stopWords;
+    private Oracle oracle;
+
+    public EmailCleanerImpl(Oracle oracle) {
+        this.oracle = oracle;
+        stopWords = loadStopWords();
+    }
 
     public EmailCleanerImpl() {
-        stopWords = loadStopWords();
+        this(null);
     }
 
     @Override
@@ -32,12 +39,19 @@ public class EmailCleanerImpl implements EmailCleaner {
         List<String> words = Lists.newArrayList(content.split("\\s+"));
         words = removeStopWords(words);
         String newContent = Joiner.on(" ").skipNulls().join(words);
+        boolean shouldRespondTo;
+        if (oracle != null) {
+            shouldRespondTo = oracle.classify(email) == Classifier.EmailClass.SHOULD_RESPOND_TO;
+        } else {
+            shouldRespondTo = false;
+        }
 
-        return new Email(email.getTo(), email.getFrom(), email.getThreadId(), email.getTimestamp(), newContent);
+        return new Email(email.getTo(), email.getFrom(), email.getThreadId(), email.getTimestamp(), newContent, shouldRespondTo);
     }
 
     private String removeHTMLTags(String content) {
-        return content.replaceAll("<p>", "").replaceAll("</p>", "").replaceAll("<span.*?>", "").replaceAll("</span>", "");
+        return Jsoup.parse(content).text();
+//        return content.replaceAll("<p>", "").replaceAll("</p>", "").replaceAll("<span.*?>", "").replaceAll("</span>", "");
     }
 
     private String removeAttachments(String content) {

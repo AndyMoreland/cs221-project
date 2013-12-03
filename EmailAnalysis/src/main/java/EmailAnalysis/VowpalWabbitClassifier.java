@@ -1,5 +1,8 @@
 package EmailAnalysis;
 
+import com.google.common.collect.Maps;
+import org.apache.commons.io.IOUtils;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
@@ -35,12 +38,23 @@ public class VowpalWabbitClassifier implements TrainableClassifier
         }
 
         // "-p", "/dev/stdout", "--quiet"
-        ProcessBuilder pb = new ProcessBuilder(VW_BINARY, "--cache_file", "train.cache", "-d", trainingDataPath, "-f", MODEL_FILENAME);
+        ProcessBuilder pb = new ProcessBuilder(
+                VW_BINARY,
+                "--cache_file", "train.cache",
+                "-d", trainingDataPath,
+                "-f", MODEL_FILENAME,
+                "-k", "--invert_hash", MODEL_FILENAME + ".readable",
+                "--passes", "10");
         Process trainingProcess = null;
         try {
             System.out.println("Training model with arguments: " + pb.command().toString());
             trainingProcess = pb.start();
             BufferedReader stdOut = new BufferedReader(new InputStreamReader(trainingProcess.getInputStream()));
+            BufferedReader stdErr = new BufferedReader(new InputStreamReader(trainingProcess.getErrorStream()));
+            List<String> errorLines = IOUtils.readLines(stdErr);
+            for (String errorLine : errorLines) {
+                System.err.println("VOWPAL WABBIT ERROR: " + errorLine);
+            }
             String line;
             while ((line = stdOut.readLine()) != null) {
                 System.out.println("Training: " + line);
@@ -95,7 +109,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
 
     @Override
     public Map<Email, EmailClass> batchClassify(List<Email> emails) {
-
+        Map<Email, EmailClass> classes = Maps.newHashMap();
         String testDataPath = null;
         try {
             System.out.println("Outputting vw test files.");
@@ -115,11 +129,15 @@ public class VowpalWabbitClassifier implements TrainableClassifier
 
             String line;
             for (int i = 0; (line = stdOut.readLine()) != null; i++) {
-                System.out.println("Testing: " + line);
+                if (i >= emails.size()) {
+                    System.err.println("Encountered extra lines: " + line);
+                }
                 if(line.contains("shouldrespond")){
                     results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
-                } else {
+                } else if (line.contains("shouldntrespond")){
                     results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
+                } else {
+                    System.err.println("Encountered unexpected output: " + line);
                 }
             }
             trainingProcess.waitFor();

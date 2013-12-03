@@ -1,5 +1,6 @@
 package test;
 
+import EmailAnalysis.CorrectClassifier;
 import EmailAnalysis.Email;
 import EmailAnalysis.EmailCleaner;
 import EmailAnalysis.EmailCleanerImpl;
@@ -35,6 +36,6 @@ public class EmailCleanerImplTest {
     }
 
     private static Email createDummyEmailWithContent(String content) {
-        return new Email("", "", 0, "", content);
+        return new Email("", "", 0, "", content, false);
     }
 }

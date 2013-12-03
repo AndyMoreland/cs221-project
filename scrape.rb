@@ -110,7 +110,7 @@ def main()
       puts "Scraped email #{i} out of #{mails.size}"
       email = mails[i]
       begin
-        to = email.to[0]
+        to = email.to ? email.to[0] : email.cc[0]
         from = email.from[0]
         part = (email.multipart? ? (email.text_part || email.html_part) : email)
         body = ""

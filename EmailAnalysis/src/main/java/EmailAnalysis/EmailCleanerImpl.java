@@ -32,7 +32,7 @@ public class EmailCleanerImpl implements EmailCleaner {
         content = removeSignature(content);
 
         List<String> words = Lists.newArrayList(content.split("\\s+"));
-//        words = removeStopWords(words);
+        words = removeStopWords(words);
         String newContent = Joiner.on(" ").skipNulls().join(words);
 
         return new CleanedEmail(email, newContent, false);

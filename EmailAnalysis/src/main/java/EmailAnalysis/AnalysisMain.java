@@ -39,6 +39,7 @@ public class AnalysisMain {
         features.add(new DirectlyToFeature());
         features.add(new UnsubscribeFeature());
         features.add(new NoReplyFeature());
+        features.add(new EmailFromNameFeature());
 
         WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, features);
         wiseRFClassifier.train(splitter.getTrainingData(), oracle);

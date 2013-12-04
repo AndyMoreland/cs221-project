@@ -1,11 +1,11 @@
 package EmailAnalysis;
 
 import com.google.common.collect.Lists;
-import org.joda.time.DateTime;
 
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class Email {
@@ -52,19 +52,14 @@ public class Email {
         return threadId;
     }
 
-    private DateTime getDateTime(String dateString) {
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZ");
-        SimpleDateFormat secondFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss ZZZZ");
-
+    // ex: "2013-12-04T03:23:13-08:00"
+    public Date getDateTime() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); // timezones are hard
         try {
-            return new DateTime(format.parse(dateString));
+            return format.parse(timestamp);
         } catch (ParseException e) {
-            try {
-                return new DateTime(secondFormat.parse(dateString));
-            } catch (ParseException e1) {
-                System.err.println("Failed to parse datetime: " + dateString);
-                return null;
-            }
+            System.err.println("Failed to parse datetime: " + timestamp);
+            return null;
         }
     }
 

@@ -1,5 +1,6 @@
 package EmailAnalysis;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -15,6 +16,7 @@ public class WiseRFClassifier implements TrainableClassifier {
     private static final String MODEL_FILENAME = "wiserf.model";
     private static final String TRAINING_DATA_FILENAME = "wiserf_train.csv";
     private static final String TEST_DATA_FILENAME = "wiserf_test.csv";
+    private static final Double THRESHOLD = 0.05;
 
     private final List<Feature> features;
     private String workingDirectory;
@@ -43,7 +45,9 @@ public class WiseRFClassifier implements TrainableClassifier {
                 WISERF_BINARY, "learn-classifier",
                 "--in-file", trainingDataPath,
                 "--model-file", workingDirectory + "/" + DATA_DIR + "/" + MODEL_FILENAME,
-                "--class-column", "1"
+                "--num-trees", "250",
+                "--class-column", "1",
+                "--feature-importances-file", "importances.txt"
         );
 
         Map<String, String> env = pb.environment();
@@ -120,6 +124,7 @@ public class WiseRFClassifier implements TrainableClassifier {
     @Override
     public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         String testDataPath = null;
+        Map<Email, EmailClass> results = Maps.newHashMap();
         try {
             System.out.println("Outputting wiserf training files.");
             testDataPath = writeData(emails, TEST_DATA_FILENAME);
@@ -131,7 +136,7 @@ public class WiseRFClassifier implements TrainableClassifier {
                 WISERF_BINARY, "test-classifier",
                 "--in-file", testDataPath,
                 "--model-file", workingDirectory + "/" + DATA_DIR + "/" + MODEL_FILENAME,
-                "--predictions-file", "predictions.txt",
+                "--probabilities-file", "probabilities.txt",
                 "--class-column", "1"
         );
 
@@ -150,13 +155,20 @@ public class WiseRFClassifier implements TrainableClassifier {
             }
             String line;
             for (int i = 0; (line = stdOut.readLine()) != null; i++) {
-//                double predictionValue = Double.parseDouble(line.substring(0, line.indexOf(" ")));
-//                if (predictionValue > THRESHOLD){
-//                    results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
-//                } else {
-//                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
-//                }
-                System.out.println("Testing: " + line);
+                System.out.println("WISERF TESTING: " + line);
+            }
+
+            int i = 0;
+            BufferedReader probReader = new BufferedReader(new FileReader("probabilities.txt"));
+            while ((line = probReader.readLine()) != null) {
+                String[] probs = line.split(" ");
+                Double shouldntRespondProb = Double.parseDouble(probs[0]);
+                if (shouldntRespondProb > THRESHOLD) {
+                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
+                } else {
+                    results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
+                }
+                i++;
             }
             testProcess.waitFor();
             System.out.println("Testing finished with code: " + testProcess.exitValue());
@@ -167,6 +179,6 @@ public class WiseRFClassifier implements TrainableClassifier {
         }
 
 
-        return null;
+        return results;
     }
 }

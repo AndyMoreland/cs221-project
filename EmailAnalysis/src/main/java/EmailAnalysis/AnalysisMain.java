@@ -35,17 +35,20 @@ public class AnalysisMain {
         List<Feature> features = Lists.newArrayList();
         populateSimpleFeatures(features);
         features.add(new BooleanClassifierFeature(vowpalWabbiTrainClassifier, vowpalWabbitClassifier));
+        features.add(new RespondedToFeature(connection));
 
         WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, features);
         wiseRFClassifier.train(splitter.getTrainingData(), oracle);
 
-//        Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
-
         executeExperiment("WiseRF classifier", oracle, splitter, wiseRFClassifier);
-        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
+//        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
     }
 
     private static void populateSimpleFeatures(List<Feature> features){
+//        features.add(new LengthFeature());
+        features.add(new DirectlyToFeature());
+        features.add(new UnsubscribeFeature());
+        features.add(new NoReplyFeature());
         features.add(new EmailFromNameFeature());
         features.add(new EmailSentBetweenFeature(8, 12));
         features.add(new EmailSentBetweenFeature(12, 16));

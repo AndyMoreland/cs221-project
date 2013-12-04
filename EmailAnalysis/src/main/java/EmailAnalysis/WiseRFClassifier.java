@@ -3,27 +3,26 @@ package EmailAnalysis;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VowpalWabbitClassifier implements TrainableClassifier
-{
-    public static final String VW_BINARY = "/usr/local/bin/vw";
+public class WiseRFClassifier implements TrainableClassifier {
 
-    private static final String DATA_DIR = "vw_data";
-    private static final String TRAINING_DATA_FILENAME = "vw_training_data.txt";
-    private static final String MODEL_FILENAME = "vw.model";
-    private static final String TEST_DATA_FILENAME = "vw_test_data.txt";
-    private static final Double THRESHOLD = 0.9;
+    private static final String WISERF_BINARY = "/usr/local/bin/wiserf";
+    private static final String WISERF_ROOT = "/Users/leo/WiseRF-1.5.11-macosx-x86_64-rc2";
 
+    private static final String DATA_DIR = "wiserf_data";
+    private static final String MODEL_FILENAME = "wiserf.model";
+    private static final String TRAINING_DATA_FILENAME = "wiserf_train.csv";
+    private static final String TEST_DATA_FILENAME = "wiserf_test.csv";
+
+    private final List<Feature> features;
     private String workingDirectory;
     private Oracle oracle;
-    private Map<Email,EmailClass> results;
 
-
-    public VowpalWabbitClassifier(String workingDirectory){
+    public WiseRFClassifier(String workingDirectory, List<Feature> features){
         this.workingDirectory = workingDirectory;
+        this.features = features;
     }
 
     @Override
@@ -41,13 +40,12 @@ public class VowpalWabbitClassifier implements TrainableClassifier
         }
 
         ProcessBuilder pb = new ProcessBuilder(
-                VW_BINARY,
-                "--cache_file", "train.cache",
-                "-d", trainingDataPath,
-                "-f", MODEL_FILENAME,
-//                "-k", "--invert_hash", MODEL_FILENAME + ".readable",
-                "--passes", "25",
-                "-q", "mm");
+                WISERF_BINARY, "learn-classifier",
+                "--in-file", trainingDataPath,
+                "--model-file", DATA_DIR + "/" + MODEL_FILENAME,
+                "--class-column", "1"
+        );
+
         Process trainingProcess = null;
         try {
             System.out.println("Training model with arguments: " + pb.command().toString());
@@ -56,7 +54,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
             BufferedReader stdErr = new BufferedReader(new InputStreamReader(trainingProcess.getErrorStream()));
             List<String> errorLines = IOUtils.readLines(stdErr);
             for (String errorLine : errorLines) {
-                System.err.println("VOWPAL WABBIT TRAINING: " + errorLine);
+                System.err.println("WISERF TRAINING: " + errorLine);
             }
             String line;
             while ((line = stdOut.readLine()) != null) {
@@ -69,44 +67,40 @@ public class VowpalWabbitClassifier implements TrainableClassifier
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 
     private void deleteOldFiles() {
-        File testCache = new File("test.cache");
-        File trainCache = new File("train.cache");
-        File modelFile = new File(MODEL_FILENAME);
-
-        testCache.delete();
-        trainCache.delete();
-        modelFile.delete();
+        File oldModel = new File(DATA_DIR + "/" + MODEL_FILENAME);
+        oldModel.delete();
     }
 
     private String writeData(List<CleanedEmail> source, String filename) throws IOException {
-    // Setup filesystem
+        // Setup filesystem
         String dataDirectoryPath = workingDirectory + "/" + DATA_DIR;
         String dataFilePath = dataDirectoryPath + "/" + filename;
 
-        File trainingDataDirectory = new File(dataDirectoryPath);
-        trainingDataDirectory.mkdir();
+        File dataDirectory = new File(dataDirectoryPath);
+        dataDirectory.mkdir();
 
         // Clear out old data
         File oldDataFile = new File(dataFilePath);
         oldDataFile.delete();
         BufferedWriter dataFile = new BufferedWriter(new FileWriter(dataFilePath));
-        System.out.println("Outputting vw files to directory: " + dataDirectoryPath);
+        System.out.println("Outputting wiserf files to directory: " + dataDirectoryPath);
 
         // Write data to file
         for (CleanedEmail email : source) {
             // Class and label
             if (oracle.classify(email) == EmailClass.SHOULD_RESPOND_TO) {
-                dataFile.write("1 shouldrespond|");
+                dataFile.write("1");
             } else {
-                dataFile.write("-1 shouldntrespond|");
+                dataFile.write("0");
             }
-            // Namespace
-            dataFile.write("messagebody ");
             // Features
-            dataFile.write(email.getContent());
+            for (Feature f : features){
+                dataFile.write("," + f.getValue(email));
+            }
             dataFile.newLine();
         }
 
@@ -116,50 +110,60 @@ public class VowpalWabbitClassifier implements TrainableClassifier
 
     @Override
     public EmailClass classify(CleanedEmail email) {
-        if (results == null) {
-            System.err.println("Attempting to use vowpal wabbit classifier before running batch classification is incorrect.");
-            return null;
-        }
-
-        return results.get(email);
+        // Go away woamg
+        return null;
     }
 
     @Override
     public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         String testDataPath = null;
         try {
-            System.out.println("Outputting vw test files.");
+            System.out.println("Outputting wiserf training files.");
             testDataPath = writeData(emails, TEST_DATA_FILENAME);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        results = new HashMap<Email, EmailClass>();
-        ProcessBuilder pb = new ProcessBuilder(VW_BINARY, "-t", "--cache_file", "test.cache",
-                "-i", MODEL_FILENAME, "-d", testDataPath, "-p", "/dev/stdout", "--quiet");
-        Process trainingProcess = null;
+        ProcessBuilder pb = new ProcessBuilder(
+                WISERF_BINARY, "test-classifier",
+                "--in-file", testDataPath,
+                "--model-file", DATA_DIR + "/" + MODEL_FILENAME,
+                "--selection-file", "/dev/stdout",
+                "--class-column", "1"
+        );
+
+        Map<String, String> env = pb.environment();
+        env.put("WISERF_ROOT", WISERF_ROOT);
+
+        Process testProcess = null;
         try {
             System.out.println("Testing model with arguments: " + pb.command().toString());
-            trainingProcess = pb.start();
-            BufferedReader stdOut = new BufferedReader(new InputStreamReader(trainingProcess.getInputStream()));
-
+            testProcess = pb.start();
+            BufferedReader stdOut = new BufferedReader(new InputStreamReader(testProcess.getInputStream()));
+            BufferedReader stdErr = new BufferedReader(new InputStreamReader(testProcess.getErrorStream()));
+            List<String> errorLines = IOUtils.readLines(stdErr);
+            for (String errorLine : errorLines) {
+                System.err.println("WISERF TESTING: " + errorLine);
+            }
             String line;
             for (int i = 0; (line = stdOut.readLine()) != null; i++) {
-                double predictionValue = Double.parseDouble(line.substring(0, line.indexOf(" ")));
-                if (predictionValue > THRESHOLD){
-                    results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
-                } else {
-                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
-                }
+//                double predictionValue = Double.parseDouble(line.substring(0, line.indexOf(" ")));
+//                if (predictionValue > THRESHOLD){
+//                    results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
+//                } else {
+//                    results.put(emails.get(i), EmailClass.SHOULDNT_RESPOND_TO);
+//                }
+                System.out.println("Testing: " + line);
             }
-            trainingProcess.waitFor();
-            System.out.println("Testing finished with code: " + trainingProcess.exitValue());
+            testProcess.waitFor();
+            System.out.println("Testing finished with code: " + testProcess.exitValue());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        return results;
+
+        return null;
     }
 }

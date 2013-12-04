@@ -33,7 +33,7 @@ public class AnalysisMain {
         vowpalWabbiTrainClassifier.batchClassify(splitter.getTrainingData());
 
         List<Feature> features = Lists.newArrayList();
-
+        features.add(new EmailFromNameFeature());
         features.add(new BooleanClassifierFeature(vowpalWabbiTrainClassifier, vowpalWabbitClassifier));
         WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, features);
         wiseRFClassifier.train(splitter.getTrainingData(), oracle);

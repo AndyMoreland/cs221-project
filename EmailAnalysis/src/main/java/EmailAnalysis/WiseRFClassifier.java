@@ -8,8 +8,8 @@ import java.util.Map;
 
 public class WiseRFClassifier implements TrainableClassifier {
 
-    private static final String WISERF_BINARY = "/usr/local/bin/wiserf";
-    private static final String WISERF_ROOT = "/Users/leo/WiseRF-1.5.11-macosx-x86_64-rc2";
+    private static final String WISERF_BINARY = "/Users/andrew/WiseRF/bin/wiserf";
+    private static final String WISERF_ROOT = "/Users/andrew/WiseRF";
 
     private static final String DATA_DIR = "wiserf_data";
     private static final String MODEL_FILENAME = "wiserf.model";
@@ -42,9 +42,12 @@ public class WiseRFClassifier implements TrainableClassifier {
         ProcessBuilder pb = new ProcessBuilder(
                 WISERF_BINARY, "learn-classifier",
                 "--in-file", trainingDataPath,
-                "--model-file", DATA_DIR + "/" + MODEL_FILENAME,
+                "--model-file", workingDirectory + "/" + DATA_DIR + "/" + MODEL_FILENAME,
                 "--class-column", "1"
         );
+
+        Map<String, String> env = pb.environment();
+        env.put("WISERF_ROOT", WISERF_ROOT);
 
         Process trainingProcess = null;
         try {
@@ -127,8 +130,8 @@ public class WiseRFClassifier implements TrainableClassifier {
         ProcessBuilder pb = new ProcessBuilder(
                 WISERF_BINARY, "test-classifier",
                 "--in-file", testDataPath,
-                "--model-file", DATA_DIR + "/" + MODEL_FILENAME,
-                "--selection-file", "/dev/stdout",
+                "--model-file", workingDirectory + "/" + DATA_DIR + "/" + MODEL_FILENAME,
+                "--predictions-file", "predictions.txt",
                 "--class-column", "1"
         );
 

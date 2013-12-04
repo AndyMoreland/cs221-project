@@ -1,5 +1,7 @@
 package EmailAnalysis;
 
+import com.google.common.collect.Lists;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,7 +9,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class AnalysisMain {
@@ -23,20 +24,28 @@ public class AnalysisMain {
 //        RainbowClassifier rainbowClassifier = new RainbowClassifier(Config.PROJECT_PATH);
 //        rainbowClassifier.train(splitter.getTrainingData(), oracle);
 
-//        VowpalWabbitClassifier vowpalWabbitClassifier = new VowpalWabbitClassifier(Config.PROJECT_PATH);
-//        vowpalWabbitClassifier.train(splitter.getTrainingData(), oracle);
+        VowpalWabbitClassifier vowpalWabbitClassifier = new VowpalWabbitClassifier(Config.PROJECT_PATH);
+        vowpalWabbitClassifier.train(splitter.getTrainingData(), oracle);
+        vowpalWabbitClassifier.batchClassify(splitter.getTestData());
 
-        WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, new ArrayList<Feature>());
+        VowpalWabbitClassifier vowpalWabbiTrainClassifier = new VowpalWabbitClassifier(Config.PROJECT_PATH);
+        vowpalWabbiTrainClassifier.train(splitter.getTrainingData(), oracle);
+        vowpalWabbiTrainClassifier.batchClassify(splitter.getTrainingData());
+
+        List<Feature> features = Lists.newArrayList();
+
+        features.add(new BooleanClassifierFeature(vowpalWabbiTrainClassifier, vowpalWabbitClassifier));
+        WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, features);
         wiseRFClassifier.train(splitter.getTrainingData(), oracle);
-
-//        HueristicClassifier hueristicClassifier = new HueristicClassifier(vowpalWabbitClassifier, oracle);
 
 //        Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
 
-        System.out.println("Executing experiment");
-//        Experiment experiment = new Experiment(oracle, vowpalWabbitClassifier);
-//        Experiment experiment = new Experiment(oracle, rainbowClassifier);
-//        Experiment experiment = new Experiment(oracle, combinedClassifier);
+        executeExperiment("WiseRF classifier", oracle, splitter, wiseRFClassifier);
+        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
+    }
+
+    private static void executeExperiment(String name, Oracle oracle, DataSplitter splitter, Classifier wiseRFClassifier) {
+        System.out.println("Executing experiment: " + name);
         Experiment experiment = new Experiment(oracle, wiseRFClassifier);
 
         Statistics stats = experiment.execute(splitter.getTestData());

@@ -47,7 +47,8 @@ public class VowpalWabbitClassifier implements TrainableClassifier
                 "-f", MODEL_FILENAME,
 //                "-k", "--invert_hash", MODEL_FILENAME + ".readable",
                 "--passes", "25",
-                "-q", "mm");
+                "-q", "mm",
+                "--l2=0.0001");
         Process trainingProcess = null;
         try {
             System.out.println("Training model with arguments: " + pb.command().toString());

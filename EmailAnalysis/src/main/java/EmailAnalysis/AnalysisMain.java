@@ -33,15 +33,18 @@ public class AnalysisMain {
         vowpalWabbiTrainClassifier.batchClassify(splitter.getTrainingData());
 
         List<Feature> features = Lists.newArrayList();
-
         features.add(new BooleanClassifierFeature(vowpalWabbiTrainClassifier, vowpalWabbitClassifier));
+//        features.add(new LengthFeature());
+        features.add(new RespondedToFeature(connection));
+        features.add(new DirectlyToFeature());
+        features.add(new UnsubscribeFeature());
+        features.add(new NoReplyFeature());
+
         WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, features);
         wiseRFClassifier.train(splitter.getTrainingData(), oracle);
 
-//        Classifier combinedClassifier = new CombinedClassifier(rainbowClassifier, simpleClassifier);
-
         executeExperiment("WiseRF classifier", oracle, splitter, wiseRFClassifier);
-        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
+//        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
     }
 
     private static void executeExperiment(String name, Oracle oracle, DataSplitter splitter, Classifier wiseRFClassifier) {

@@ -9,8 +9,10 @@ import java.util.Map;
 
 public class WiseRFClassifier implements TrainableClassifier, ContinuousClassifier {
 
-    private static final String WISERF_BINARY = "/Users/andrew/WiseRF/bin/wiserf";
-    private static final String WISERF_ROOT = "/Users/andrew/WiseRF";
+    // private static final String WISERF_BINARY = "/Users/andrew/WiseRF/bin/wiserf";
+    private static final String WISERF_BINARY = "/usr/local/bin/wiserf";
+    // private static final String WISERF_ROOT = "/Users/andrew/WiseRF";
+    private static final String WISERF_ROOT = "/Users/leo/WiseRF-1.5.11-macosx-x86_64-rc2";
 
     private static final String DATA_DIR = "wiserf_data";
     private static final String MODEL_FILENAME = "wiserf.model";

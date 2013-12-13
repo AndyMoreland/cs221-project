@@ -64,7 +64,13 @@ public class AnalysisMain {
     private static void populateSimpleFeatures(List<Feature> features){
 //        features.add(new LengthFeature());
         features.add(new DirectlyToFeature());
-        features.add(new UnsubscribeFeature());
+        features.add(new UnigramFeature("unsubscribe"));
+        features.add(new UnigramFeature("tip"));
+        features.add(new UnigramFeature("mailing"));
+        features.add(new UnigramFeature("gmail"));
+        features.add(new UnigramFeature("party"));
+        features.add(new UnigramFeature("chat"));
+        features.add(new UnigramFeature("lists"));
         features.add(new NoReplyFeature());
         features.add(new EmailFromNameFeature());
         features.add(new EmailSentBetweenFeature(8, 12));

@@ -87,6 +87,8 @@ def main()
       String :from
       DateTime :timestamp
       Bignum :thread_id
+      boolean :repied_to
+      Bignum :original_email_id
     end
 
   rescue

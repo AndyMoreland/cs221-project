@@ -39,9 +39,26 @@ public class AnalysisMain {
 
         WiseRFClassifier wiseRFClassifier = new WiseRFClassifier(Config.PROJECT_PATH, features);
         wiseRFClassifier.train(splitter.getTrainingData(), oracle);
+        wiseRFClassifier.batchClassify(splitter.getTestData());
 
-        executeExperiment("WiseRF classifier", oracle, splitter, wiseRFClassifier);
-//        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
+//        executeExperiment("WiseRF classifier", oracle, splitter, wiseRFClassifier);
+        System.out.println("Computing ROC curve");
+        computeROCCurve(oracle, splitter, wiseRFClassifier);
+//        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);x
+    }
+
+    private static void computeROCCurve(Oracle oracle, DataSplitter splitter, WiseRFClassifier wiseRFClassifier) {
+        AdjustableThresholdClassifier thresholdClassifier = new AdjustableThresholdClassifier(wiseRFClassifier);
+        List<Statistics> experimentStats = Lists.newArrayList();
+        for (double i = 0.0; i <= 1.05; i += 0.05) {
+            thresholdClassifier.setThreshold(i);
+            Statistics stats = executeExperiment("Experiment for: " + i, oracle, splitter, thresholdClassifier);
+            experimentStats.add(stats);
+        }
+
+        for (int i = 0; i <= 20; i++) {
+            System.out.println(i * 0.05 + "," + experimentStats.get(i).getPrecision() + "," + experimentStats.get(i).getRecall());
+        }
     }
 
     private static void populateSimpleFeatures(List<Feature> features){
@@ -58,7 +75,7 @@ public class AnalysisMain {
         features.add(new EmailSentBetweenFeature(4, 8));
     }
 
-    private static void executeExperiment(String name, Oracle oracle, DataSplitter splitter, Classifier wiseRFClassifier) {
+    private static Statistics executeExperiment(String name, Oracle oracle, DataSplitter splitter, Classifier wiseRFClassifier) {
         System.out.println("Executing experiment: " + name);
         Experiment experiment = new Experiment(oracle, wiseRFClassifier);
 
@@ -71,6 +88,8 @@ public class AnalysisMain {
         System.out.println("False negative: " + stats.falseNegative);
 
         writeIncorrectlyClassifiedEmails(experiment);
+
+        return stats;
     }
 
     private static void writeIncorrectlyClassifiedEmails(Experiment experiment) {

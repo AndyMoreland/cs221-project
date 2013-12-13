@@ -15,6 +15,7 @@ public class VowpalWabbitClassifier implements TrainableClassifier
     private static final String TRAINING_DATA_FILENAME = "vw_training_data.txt";
     private static final String MODEL_FILENAME = "vw.model";
     private static final String TEST_DATA_FILENAME = "vw_test_data.txt";
+    // FIXME: was 0.9
     private static final Double THRESHOLD = 0.9;
 
     private String workingDirectory;

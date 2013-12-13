@@ -7,7 +7,7 @@ import java.io.*;
 import java.util.List;
 import java.util.Map;
 
-public class WiseRFClassifier implements TrainableClassifier {
+public class WiseRFClassifier implements TrainableClassifier, ContinuousClassifier {
 
     private static final String WISERF_BINARY = "/Users/andrew/WiseRF/bin/wiserf";
     private static final String WISERF_ROOT = "/Users/andrew/WiseRF";
@@ -18,6 +18,7 @@ public class WiseRFClassifier implements TrainableClassifier {
     private static final String TEST_DATA_FILENAME = "wiserf_test.csv";
     private static final Double THRESHOLD = 0.05;
 
+    private Map<CleanedEmail, Double> classificationConfidences = null;
     private final List<Feature> features;
     private String workingDirectory;
     private Oracle oracle;
@@ -125,6 +126,7 @@ public class WiseRFClassifier implements TrainableClassifier {
     public Map<Email, EmailClass> batchClassify(List<CleanedEmail> emails) {
         String testDataPath = null;
         Map<Email, EmailClass> results = Maps.newHashMap();
+        classificationConfidences = Maps.newHashMap();
         try {
             System.out.println("Outputting wiserf training files.");
             testDataPath = writeData(emails, TEST_DATA_FILENAME);
@@ -168,6 +170,8 @@ public class WiseRFClassifier implements TrainableClassifier {
                 } else {
                     results.put(emails.get(i), EmailClass.SHOULD_RESPOND_TO);
                 }
+
+                classificationConfidences.put(emails.get(i), 1 - shouldntRespondProb);
                 i++;
             }
             testProcess.waitFor();
@@ -180,5 +184,14 @@ public class WiseRFClassifier implements TrainableClassifier {
 
 
         return results;
+    }
+
+    @Override
+    public Double getClassificationConfidence(CleanedEmail email) {
+        if (classificationConfidences == null) {
+            System.err.println("Attempting to fetch classification confidence before classification has occurred.");
+        }
+
+        return classificationConfidences.get(email);
     }
 }

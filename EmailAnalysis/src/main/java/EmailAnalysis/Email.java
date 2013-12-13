@@ -54,7 +54,7 @@ public class Email {
 
     // ex: "2013-12-04T03:23:13-08:00"
     public Date getDateTime() {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); // timezones are hard
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // timezones are hard
         try {
             return format.parse(timestamp);
         } catch (ParseException e) {

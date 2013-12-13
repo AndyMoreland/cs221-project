@@ -13,4 +13,8 @@ public class Statistics {
     public float getPrecision() {
         return (float) truePositive / ((float) falsePositive + (float) truePositive);
     }
+
+    public float getF1() {
+        return 2 * (getRecall() * getPrecision()) / (getPrecision() + getRecall());
+    }
 }

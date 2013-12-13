@@ -80,12 +80,22 @@ public class AnalysisMain {
         Experiment experiment = new Experiment(oracle, wiseRFClassifier);
 
         Statistics stats = experiment.execute(splitter.getTestData());
+        Statistics stats2 = experiment.execute(splitter.getTrainingData());
 
-        System.out.println("Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
-        System.out.println("True positive: " + stats.truePositive);
-        System.out.println("True negative: " + stats.trueNegative);
-        System.out.println("False positive: " + stats.falsePositive);
-        System.out.println("False negative: " + stats.falseNegative);
+        System.out.println("Test Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
+        System.out.println("Test F1:" + stats.getF1());
+        System.out.println("Test True positive: " + stats.truePositive);
+        System.out.println("Test True negative: " + stats.trueNegative);
+        System.out.println("Test False positive: " + stats.falsePositive);
+        System.out.println("Test False negative: " + stats.falseNegative);
+
+        System.out.println("Train Precision: " + stats2.getPrecision() + " Recall: " + stats2.getRecall());
+        System.out.println("Train F1:" + stats2.getF1());
+        System.out.println("Train True positive: " + stats2.truePositive);
+        System.out.println("Train True negative: " + stats2.trueNegative);
+        System.out.println("Train False positive: " + stats2.falsePositive);
+        System.out.println("Train False negative: " + stats2.falseNegative);
+
 
         writeIncorrectlyClassifiedEmails(experiment);
 

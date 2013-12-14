@@ -1,0 +1,51 @@
+lmartel (Leo Martel)
+andymo (Andy Moreland)
+
+Automated Email Reminders with Machine Learning
+===============================================
+
+Our workflow
+------------
+
+1) Use the scraping script to harvest your gmail / google apps inbox and store the contents in a sqlite3 database.
+    ```
+    bundle exec ./scrape.rb me@domain.com mypassword
+    ```
+
+2) Compile (we use intellij) the java project located in ./EmailAnalysis.
+
+3) Run CleaningMain (you may have to increase intellij/eclipse heap size) to preprocess the emails.
+
+4) Run OracleCachingMain to compute and store the correct label for each email (whether it was responded to or not).
+
+5) Run AnalysisMain. This runs all the analysis and prints the results to stdout (recall, precision, confusion matrices for each of various classification thresholds)
+
+Where things are
+----------------
+
+### Our code
+
+Ruby code used for scraping is in ./scrape.rb
+
+Java code used for preprocessing and analysis is in ./EmailAnalysis/src/main/java/EmailAnalysis.
+
+### Our data
+
+Our data (the complete contents of people's email accounts) is pretty sensitive. We've extracted 5 safe sample emails (both the raw and clean versions). This should be enough to get the idea; check out SAMPLE_RAW_DATA.csv and SAMPLE_CLEAN_DATA.csv to see the data.
+
+If having more sample data is very important to the grading process, please either run the scrape script and use your own emails, or contact [Leo](mailto:lmartel@stanford.edu) and [Andy](mailto:andymo@stanford.edu) and we can pull together a longer non-privacy-violating sample dataset :) 
+
+### Libraries
+
+- [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit)
+    - Vowpal Wabbit is an open-source Stochastic Gradient Descent ML implementation.
+    - Install and symlink to /usr/local/bin/vw
+- [WiseRF](http://about.wise.io/wiserf/)
+    - WiseRF is a Random Forest classifier
+    - Free trial available [here](http://license.wise.io/)
+    - Install and symlink to /usr/local/bin/wiserf
+    - You'll also need to set WISERF_ROOT for API key verification. Just open WiseRFClassifier.java and change the string constant.
+- [Rainbow](http://www.cs.cmu.edu/~mccallum/bow/rainbow/)
+    - Rainbow is an open source Naive Bayes implementation.
+    - We built a classifier around Rainbow in an early version of the project but the final classifier does not use the RainbowClassifier.
+    - Install and symlink to /usr/local/bin/rainbow

@@ -16,7 +16,7 @@ public class UnbalancedDataSplitter implements DataSplitter {
     private List<CleanedEmail> test;
     private String userEmailAddress;
     private Oracle oracle;
-    private double ratio;
+    private double ratio = 0.3;
 
     /**
      * Construct a EmailAnalysis.DataSplitterImpl
@@ -39,16 +39,16 @@ public class UnbalancedDataSplitter implements DataSplitter {
 
         System.out.println("Found " + respondToEmails.size() + " positive examples.");
         System.out.println("Found " + noRespondToEmails.size() + " negative examples.");
-        System.out.println("Built a training set with " + respondToEmails.size() * 0.7 + " positive examples.");
-        System.out.println("Built a training set with " + respondToEmails.size() * 0.7 + " negative examples.");
+        System.out.println("Built a training set with " + respondToEmails.size() * ratio + " positive examples.");
+        System.out.println("Built a training set with " + respondToEmails.size() * ratio + " negative examples.");
 
         Collections.shuffle(receivedEmails);
         int i = 0;
         int j = 0;
-        for(; i < respondToEmails.size() * 0.7; i++){
+        for(; i < respondToEmails.size() * ratio; i++){
             training.add(respondToEmails.get(i));
         }
-        for(; j < respondToEmails.size() * 0.7; j++) {
+        for(; j < respondToEmails.size() * ratio; j++) {
             training.add(noRespondToEmails.get(j));
         }
         for(; i < respondToEmails.size(); i++){

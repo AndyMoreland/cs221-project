@@ -16,7 +16,7 @@ public class UnbalancedDataSplitter implements DataSplitter {
     private List<CleanedEmail> test;
     private String userEmailAddress;
     private Oracle oracle;
-    private double ratio = 0.3;
+    private double ratio = 0.5;
 
     /**
      * Construct a EmailAnalysis.DataSplitterImpl

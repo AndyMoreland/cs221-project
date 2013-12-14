@@ -44,7 +44,7 @@ public class AnalysisMain {
 //        executeExperiment("WiseRF classifier", oracle, splitter, wiseRFClassifier);
         System.out.println("Computing ROC curve");
         computeROCCurve(oracle, splitter, wiseRFClassifier);
-//        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);x
+//        executeExperiment("Vowpal Wabbit classifier", oracle, splitter, vowpalWabbitClassifier);
     }
 
     private static void computeROCCurve(Oracle oracle, DataSplitter splitter, WiseRFClassifier wiseRFClassifier) {
@@ -86,7 +86,7 @@ public class AnalysisMain {
         Experiment experiment = new Experiment(oracle, wiseRFClassifier);
 
         Statistics stats = experiment.execute(splitter.getTestData());
-        Statistics stats2 = experiment.execute(splitter.getTrainingData());
+        // Statistics stats2 = experiment.execute(splitter.getTrainingData());
 
         System.out.println("Test Precision: " + stats.getPrecision() + " Recall: " + stats.getRecall());
         System.out.println("Test F1:" + stats.getF1());
@@ -95,12 +95,12 @@ public class AnalysisMain {
         System.out.println("Test False positive: " + stats.falsePositive);
         System.out.println("Test False negative: " + stats.falseNegative);
 
-        System.out.println("Train Precision: " + stats2.getPrecision() + " Recall: " + stats2.getRecall());
-        System.out.println("Train F1:" + stats2.getF1());
-        System.out.println("Train True positive: " + stats2.truePositive);
-        System.out.println("Train True negative: " + stats2.trueNegative);
-        System.out.println("Train False positive: " + stats2.falsePositive);
-        System.out.println("Train False negative: " + stats2.falseNegative);
+//        System.out.println("Train Precision: " + stats2.getPrecision() + " Recall: " + stats2.getRecall());
+//        System.out.println("Train F1:" + stats2.getF1());
+//        System.out.println("Train True positive: " + stats2.truePositive);
+//        System.out.println("Train True negative: " + stats2.trueNegative);
+//        System.out.println("Train False positive: " + stats2.falsePositive);
+//        System.out.println("Train False negative: " + stats2.falseNegative);
 
 
         writeIncorrectlyClassifiedEmails(experiment);
